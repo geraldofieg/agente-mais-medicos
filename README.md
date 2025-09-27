@@ -1,94 +1,98 @@
-# Ferramenta de Automação de Relatórios - Mais Médicos (Versão Melhorada)
+# Ferramenta de Automação de Relatórios - Mais Médicos (Versão 2.0 com Firebase)
 
-Olá! Esta é uma ferramenta simples criada para facilitar e agilizar o preenchimento dos seus relatórios mensais do programa Mais Médicos.
+## Visão Geral
 
-O objetivo é simples: em vez de preencher o formulário completo no site do governo todo mês, você usará uma página local onde a maioria dos dados já estará salva. Você só precisará conferir as informações, ajustar o que for necessário, e então um "robô" fará o trabalho de preenchimento no site do governo para você.
+Bem-vindo à versão 2.0 da Ferramenta de Automação de Relatórios! Esta versão foi completamente modernizada para ser mais robusta, segura e fácil de usar. Eliminamos a necessidade de baixar e gerenciar arquivos `dados.json` manualmente. Agora, a ferramenta usa o **Firebase**, um banco de dados em nuvem do Google, para centralizar todas as informações.
 
-## Como Funciona
-
-A solução é dividida em duas partes principais:
-
-1.  **A Página Web (`index.html`)**: É um formulário local que você abre no seu navegador. Nela, você cadastra os dados dos médicos supervisionados. A página salva essas informações no seu próprio computador (`localStorage`). Mensalmente, você a usará para gerar um arquivo chamado `dados.json`.
-2.  **O Robô de Automação (`automation_agent.js`)**: É um script que lê o arquivo `dados.json`, abre o site do governo, faz o login com suas credenciais e preenche o relatório automaticamente.
+**Principais Vantagens da Nova Versão:**
+*   **Acesso de Qualquer Lugar:** Sua lista de médicos supervisionados fica salva na nuvem. Acesse e gerencie de qualquer computador ou dispositivo.
+*   **Fluxo de Trabalho Simplificado:** Não há mais download de arquivos. Clique em "Enviar para Automação" e o robô cuidará do resto.
+*   **Automação Inteligente:** O robô fica "escutando" por novos relatórios e os processa em tempo real, sem precisar ser iniciado manualmente para cada relatório.
+*   **Mais Segurança:** As credenciais e chaves de acesso são gerenciadas de forma mais segura.
 
 ---
 
 ## 1. Configuração Inicial (Feita apenas uma vez)
 
-Siga estes passos para preparar seu computador. Leva apenas alguns minutos.
+Siga estes passos para preparar seu ambiente. Leva cerca de 10-15 minutos.
 
 ### Passo 1: Instalar o Node.js
 
-Node.js é a plataforma que permite que nosso robô funcione. Se você já o tem instalado, pode pular esta etapa.
+Node.js é a plataforma que permite que nosso robô funcione.
+1.  Acesse: [https://nodejs.org/](https://nodejs.org/)
+2.  Baixe e instale a versão **LTS**.
 
-1.  Acesse o site: [https://nodejs.org/](https://nodejs.org/)
-2.  Baixe a versão **LTS** (marcada como "Recomendado para a maioria dos usuários").
-3.  Execute o instalador e siga as instruções (pode apenas clicar em "Avançar" em todas as etapas).
+### Passo 2: Configurar o Projeto Firebase
 
-### Passo 2: Baixar e Preparar os Arquivos da Ferramenta
+Esta é a etapa mais importante. Vamos criar o banco de dados na nuvem.
 
-1.  Crie uma pasta em um local de fácil acesso no seu computador (ex: `C:\Usuarios\SeuNome\Documentos\AutomacaoRelatorios`).
-2.  Baixe **todos** os arquivos do projeto e coloque-os dentro desta pasta.
-    *   `index.html`
-    *   `scripts.js`
-    *   `style.css`
-    *   `automation_agent.js`
-    *   `config.js`
-    *   `package.json`
-    *   `.env` (se este arquivo não veio, renomeie `env.example` para `.env` ou crie-o)
+1.  **Crie o Projeto no Firebase:**
+    *   Acesse o [Console do Firebase](https://console.firebase.google.com/) com sua conta do Google.
+    *   Clique em **"Adicionar projeto"**, dê um nome (ex: `automacao-maismedicos`) e siga as instruções (pode desativar o Google Analytics).
 
-### Passo 3: Instalar as Dependências do Robô
+2.  **Crie o Banco de Dados (Firestore):**
+    *   Dentro do seu projeto, no menu esquerdo, clique em **Construir > Firestore Database**.
+    *   Clique em **"Criar banco de dados"**.
+    *   Selecione **"Iniciar em modo de produção"** e clique em "Avançar".
+    *   Escolha um local para o servidor (pode manter o padrão) e clique em **"Ativar"**.
+    *   Vá para a aba **"Regras"** e altere `allow read, write: if false;` para `allow read, write: if true;` e clique em **"Publicar"**. Isso é para simplificar o desenvolvimento inicial.
 
-1.  Abra o **Prompt de Comando** (no Windows, pesquise por `cmd` no Menu Iniciar) ou o **Terminal** (no Mac).
-2.  Navegue até a pasta que você criou no passo anterior. Use o comando `cd` seguido do caminho da pasta. Exemplo:
-    *   `cd Documentos/AutomacaoRelatorios`
-3.  Agora, execute o seguinte comando para instalar tudo o que o robô precisa (incluindo os navegadores):
+3.  **Obtenha a Chave da Interface (`firebase-config.js`):**
+    *   Volte para a tela principal do projeto, clique no ícone de engrenagem > **Configurações do projeto**.
+    *   Na aba "Geral", role para baixo e clique no ícone da web (`</>`) para "Adicionar um app da Web".
+    *   Dê um apelido (ex: "Interface do Supervisor") e clique em **"Registrar app"**.
+    *   O Firebase mostrará um objeto `firebaseConfig`. **Copie este objeto.**
+    *   No seu código, cole esse objeto dentro do arquivo `firebase-config.js`, substituindo o conteúdo existente se necessário.
+
+4.  **Obtenha a Chave do Robô (`firebase-service-account.json`):**
+    *   Nas **Configurações do projeto**, vá para a aba **"Contas de serviço"**.
+    *   Clique em **"Gerar nova chave privada"** e confirme.
+    *   Um arquivo `.json` será baixado. **Renomeie-o para `firebase-service-account.json`** e mova-o para a pasta raiz do seu projeto. **NÃO COMPARTILHE ESTE ARQUIVO!**
+
+### Passo 3: Preparar os Arquivos Locais
+
+1.  Baixe todos os arquivos do projeto para uma pasta no seu computador.
+2.  Abra um terminal (Prompt de Comando ou PowerShell) nessa pasta e execute:
     ```bash
-    npm run install-deps
+    npm install
     ```
-    Aguarde a conclusão. Este comando pode levar alguns minutos.
+    Isso instalará todas as dependências, incluindo Playwright.
 
-### Passo 4: Configurar Suas Informações (A parte mais importante!)
+### Passo 4: Configurar Credenciais e URLs
 
-Diferente da versão antiga, suas informações agora ficam em arquivos de configuração separados, o que é mais seguro e organizado.
-
-1.  **Preencha suas Credenciais (Arquivo `.env`)**:
-    *   Abra o arquivo `.env` com um editor de texto simples (como o Bloco de Notas).
-    *   Substitua `SEU_USUARIO_AQUI` e `SUA_SENHA_AQUI` com seu usuário e senha reais do site do governo.
-    *   **Exemplo:**
-        ```
-        LOGIN_USER="meu.usuario"
-        LOGIN_PASSWORD="minhasenha123"
-        ```
-    *   Salve e feche o arquivo. **Nunca compartilhe este arquivo com ninguém!**
-
-2.  **Configure as URLs e Seletores (Arquivo `config.js`)**:
-    *   Abra o arquivo `config.js`.
-    *   Você precisará preencher as URLs do site do governo e os seletores de cada campo do formulário.
-    *   **`GOV_URLS`**: Cole as URLs exatas da página de login e da página do formulário.
-    *   **`SELECTORS`**: Esta é a parte mais técnica. Os seletores são os "endereços" de cada campo no site. Você precisará inspecionar o código-fonte do site do governo para encontrá-los (geralmente clicando com o botão direito no campo e selecionando "Inspecionar"). Se precisar de ajuda, contate o desenvolvedor.
+1.  **Arquivo `.env`**: Crie um arquivo chamado `.env` na raiz do projeto. Dentro dele, adicione suas credenciais:
+    ```
+    LOGIN_USER="seu.usuario.gov"
+    LOGIN_PASSWORD="sua-senha-super-secreta"
+    ```
+2.  **Arquivo `config.js`**: Abra o `config.js` e preencha as URLs do site do governo e os seletores CSS de cada campo do formulário.
 
 ---
 
-## 2. Como Usar no Dia a Dia (Processo Mensal)
+## 2. Como Usar no Dia a Dia
 
-Depois da configuração inicial, seu processo mensal será muito rápido:
+O processo agora é muito mais simples.
 
-1.  **Abra a Página Web**: Dê um duplo clique no arquivo `index.html`. Ele abrirá no seu navegador.
+### Parte 1: O Supervisor (Você)
 
-2.  **Cadastre ou Selecione o Médico**:
-    *   Para um médico novo, preencha o formulário.
-    *   Para um médico já cadastrado, selecione-o na lista para carregar seus dados.
+1.  **Abra a Interface**: Abra o arquivo `index.html` no seu navegador.
+2.  **Gerencie os Médicos**: Use o botão "Cadastrar/Editar Médicos" para adicionar ou atualizar as informações da sua equipe. Esses dados ficam salvos na nuvem.
+3.  **Preencha o Relatório**:
+    *   Selecione o médico na lista.
+    *   Preencha os campos do relatório mensal.
+    *   Clique em **"Enviar Relatório para Automação"**.
 
-3.  **Preencha e Exporte**: Preencha os campos que mudam todo mês (como a data da supervisão) e clique no botão **"Salvar e Exportar Dados para Automação"**.
+É isso! O relatório foi enviado para a "fila" de processamento no Firebase.
 
-4.  **Salve o `dados.json`**: O navegador fará o download de um arquivo chamado `dados.json`. **Salve-o na mesma pasta** onde estão os outros arquivos da ferramenta.
+### Parte 2: O Robô (Automático)
 
-5.  **Execute o Robô**:
-    *   Abra o Prompt de Comando/Terminal na pasta da ferramenta (como você fez na instalação).
-    *   Digite o seguinte comando e pressione Enter:
-        ```bash
-        npm start
-        ```
+Para que a mágica aconteça, o robô precisa estar em execução. Você pode iniciá-lo e deixá-lo rodando em segundo plano.
 
-Pronto! Uma janela do navegador se abrirá e você verá o robô preenchendo o formulário por você. A janela permanecerá aberta para que você possa verificar se tudo foi preenchido corretamente.
+1.  **Inicie o Robô**: No terminal, na pasta do projeto, execute:
+    ```bash
+    node automation_agent.js
+    ```
+2.  **Monitore**: O terminal mostrará a mensagem "Aguardando por novos relatórios...".
+3.  **Ação!**: Assim que você enviar um relatório pela interface, o robô irá detectá-lo, abrir o navegador, preencher tudo e atualizar o status no Firebase para "completed" ou "failed". Você pode acompanhar o progresso pelo terminal.
+
+Você só precisa iniciar o robô uma vez por sessão de trabalho. Ele continuará monitorando até que você feche o terminal.
