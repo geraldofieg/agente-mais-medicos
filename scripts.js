@@ -2,13 +2,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('cadastro-form');
     const doctorSelector = document.getElementById('doctor-selector');
     const medicoCpfInput = document.getElementById('medico-cpf');
+    const newDoctorBtn = document.getElementById('new-doctor-btn');
 
     // Função para carregar os nomes dos médicos no seletor
     function loadDoctorSelector() {
         const data = JSON.parse(localStorage.getItem('maismedicos_data')) || {};
         const doctors = Object.keys(data);
 
-        doctorSelector.innerHTML = '<option value="">-- Selecione um médico para carregar os dados --</option>';
+        doctorSelector.innerHTML = '<option value="">-- Selecione um médico --</option>';
 
         if (doctors.length > 0) {
             doctors.forEach(cpf => {
@@ -45,6 +46,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
+    }
+
+    // Função para limpar o formulário para um novo cadastro
+    function clearFormForNewDoctor() {
+        form.reset();
+        doctorSelector.value = ''; // Reseta o seletor para a opção padrão
+        medicoCpfInput.focus(); // Foca no campo CPF para facilitar o novo cadastro
+        // Dispara eventos de 'change' nos radios para resetar a UI condicional
+        document.querySelectorAll('input[type="radio"]').forEach(radio => radio.dispatchEvent(new Event('change')));
+        console.log('Formulário limpo para novo cadastro.');
     }
 
     // Evento para salvar os dados e exportar o JSON para automação
@@ -93,9 +104,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedCpf) {
             populateForm(selectedCpf);
         } else {
-            form.reset(); // Limpa o formulário se nenhuma opção for selecionada
+            clearFormForNewDoctor(); // Limpa o formulário se a opção padrão for selecionada
         }
     });
+
+    // Evento para limpar o formulário ao clicar em "Cadastrar Novo Médico"
+    newDoctorBtn.addEventListener('click', clearFormForNewDoctor);
 
     // Carregar o seletor de médicos ao iniciar a página
     loadDoctorSelector();

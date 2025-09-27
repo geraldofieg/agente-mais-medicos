@@ -11,12 +11,19 @@
     <div class="container">
         <h1>Formulário Mais Médicos</h1>
 
-        <div class="form-group" style="margin-bottom: 30px;">
-            <label for="doctor-selector" style="font-size: 1.1em;">Selecione um Médico Cadastrado:</label>
-            <select id="doctor-selector" name="doctor-selector">
-                <option value="">-- Nenhum médico selecionado --</option>
-            </select>
-            <p style="font-size: 0.9em; color: #666;">Para cadastrar um novo médico, preencha o formulário abaixo e salve. Para carregar os dados de um médico existente, selecione-o na lista.</p>
+        <div class="actions-container">
+            <div class="action-box">
+                <label for="new-doctor-btn">Novo Cadastro</label>
+                <button type="button" id="new-doctor-btn" class="action-btn">Cadastrar Novo Médico</button>
+                <p>Clique para limpar o formulário e inserir um novo médico.</p>
+            </div>
+            <div class="action-box">
+                <label for="doctor-selector">Carregar Dados Existentes</label>
+                <select id="doctor-selector" name="doctor-selector">
+                    <option value="">-- Selecione um médico --</option>
+                </select>
+                <p>Selecione um médico para ver ou editar seus dados.</p>
+            </div>
         </div>
 
         <form id="cadastro-form">
