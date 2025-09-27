@@ -181,19 +181,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const radios = document.querySelectorAll(`input[name="${radioGroupName}"]`);
         const conditionalElement = document.getElementById(conditionalElementId);
 
-        radios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.checked && this.value === showOnValue) {
-                    conditionalElement.classList.remove('hidden');
-                } else {
-                    conditionalElement.classList.add('hidden');
-                }
-            });
-            // Estado inicial
-            if (radio.checked && radio.value !== showOnValue) {
-                 conditionalElement.classList.add('hidden');
+        function setVisibility() {
+            const selectedRadio = document.querySelector(`input[name="${radioGroupName}"]:checked`);
+            if (selectedRadio && selectedRadio.value === showOnValue) {
+                conditionalElement.classList.remove('hidden');
+            } else {
+                conditionalElement.classList.add('hidden');
             }
+        }
+
+        radios.forEach(radio => {
+            radio.addEventListener('change', setVisibility);
         });
+
+        // Set initial state on page load
+        setVisibility();
     }
 
 
