@@ -90,3 +90,47 @@ button:hover {
     color: #666;
     margin-top: 5px;
 }
+
+/* Estilos para a nova seção de ações */
+.actions-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
+}
+
+.action-box {
+    flex: 1;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fdfdfd;
+    text-align: center;
+}
+
+.action-box label {
+    font-size: 1.1em;
+    color: #333;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.action-box p {
+    font-size: 0.85em;
+    color: #777;
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+.action-btn {
+    background-color: #28a745;
+    border-color: #28a745;
+    width: 100%;
+}
+
+.action-btn:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
