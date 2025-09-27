@@ -1,0 +1,21 @@
+{
+  "name": "automacao-relatorios-mais-medicos",
+  "version": "1.0.0",
+  "description": "Ferramenta para automação do preenchimento de relatórios do programa Mais Médicos.",
+  "main": "automation_agent.js",
+  "scripts": {
+    "start": "node automation_agent.js",
+    "install-deps": "npm install && npx playwright install"
+  },
+  "keywords": [
+    "playwright",
+    "automation",
+    "maismedicos"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "playwright": "^1.40.1"
+  }
+}
