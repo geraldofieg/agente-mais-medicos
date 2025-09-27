@@ -19,6 +19,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const doctorIdInput = document.getElementById('doctor-id'); // Mantido para lógica de edição
     const clearDoctorFormBtn = document.getElementById('clear-doctor-form-btn');
 
+    // --- Elementos do Modal de Sucesso ---
+    const successModal = document.getElementById('success-modal');
+    const successOkBtn = document.getElementById('success-ok-btn');
+
     // Referência para a coleção 'doctors' no Firestore.
     // Pense nisso como o "endereço" da nossa lista de médicos no banco de dados.
     const doctorsCollection = collection(db, 'doctors');
@@ -95,7 +99,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Cria um documento no Firestore usando o CPF como ID único.
             // A função setDoc cria ou substitui um documento.
             await setDoc(doc(db, 'doctors', cpf), doctorData);
-            alert('Médico salvo com sucesso no Firebase!');
+
+            // Em vez de um alerta, fechamos o modal de formulário e mostramos o de sucesso
+            closeModal(); // Fecha o modal de cadastro
+            successModal.classList.remove('hidden'); // Mostra o modal de sucesso
+
             doctorForm.reset();
             doctorIdInput.value = '';
             // A lista irá atualizar automaticamente graças ao 'onSnapshot'
@@ -103,6 +111,11 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Erro ao salvar médico no Firestore: ", error);
             alert("Ocorreu um erro ao salvar o médico. Verifique o console para mais detalhes.");
         }
+    });
+
+    // Fecha o modal de sucesso ao clicar em "OK" e recarrega a página
+    successOkBtn.addEventListener('click', () => {
+        window.location.reload();
     });
 
     // Lógica para clicar na lista de médicos (para editar ou excluir)
