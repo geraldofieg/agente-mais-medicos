@@ -134,3 +134,29 @@ button:hover {
     background-color: #218838;
     border-color: #1e7e34;
 }
+
+/* Estilos para novos campos do formulário */
+.date-selector-group {
+    display: flex;
+    gap: 10px;
+}
+
+.date-selector-group select {
+    flex: 1;
+}
+
+.checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+.checkbox-group label {
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}

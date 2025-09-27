@@ -116,8 +116,12 @@
                 <!-- Seção 1: DATA DO ACOMPANHAMENTO LONGITUDINAL -->
                 <h2>1. Data do Acompanhamento Longitudinal</h2>
                 <div class="form-group">
-                    <label for="data-supervisao">1.1 Data da supervisão:</label>
-                    <input type="date" id="data-supervisao" name="data-supervisao">
+                    <label>1.1 Data da supervisão:</label>
+                    <div class="date-selector-group">
+                        <select id="data-supervisao-dia" name="data-supervisao-dia" aria-label="Dia"></select>
+                        <select id="data-supervisao-mes" name="data-supervisao-mes" aria-label="Mês"></select>
+                        <select id="data-supervisao-ano" name="data-supervisao-ano" aria-label="Ano"></select>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="horario-inicio">1.2 Horário de início:</label>
@@ -128,26 +132,30 @@
                     <input type="time" id="horario-termino" name="horario-termino">
                 </div>
 
-                <!-- Seção 2: REALIZAÇÃO DE CONTATO PRÉVIO -->
-                <h2>2. Realização de Contato Prévio</h2>
+                <!-- Seção 2: REALIZAÇÃO DE CONTATO E MODALIDADE -->
+                <h2>2. Contato e Modalidade</h2>
                 <div class="form-group radio-group">
                     <label>2.1 Houve contato prévio para agendamento da supervisão?</label>
-                    <label><input type="radio" name="contato-previo" value="Sim" checked> Sim</label>
-                    <label><input type="radio" name="contato-previo" value="Nao"> Não</label>
+                    <label><input type="radio" name="contato-previo" value="Sim"> Sim</label>
+                    <label><input type="radio" name="contato-previo" value="Nao" checked> Não</label>
                 </div>
-                <div id="motivo-contato-previo-nao" class="conditional">
-                    <div class="form-group">
-                        <label for="motivo-nao-contato">2.2 Se não, por quê?</label>
-                        <textarea id="motivo-nao-contato" name="motivo-nao-contato" rows="3"></textarea>
-                    </div>
+                <div class="form-group">
+                    <label for="modalidade-supervisao">2.2 Modalidade da Supervisão:</label>
+                    <select id="modalidade-supervisao" name="modalidade-supervisao">
+                        <option value="Webconferencia" selected>Webconferência</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="justificativa-modalidade">2.3 Justificativa da modalidade:</label>
+                    <textarea id="justificativa-modalidade" name="justificativa-modalidade" rows="3">Não foi realizado nenhuma supervisão presencial na gestão do supervisor atual devido mudança na modalidade de acompanhamento do programa.</textarea>
                 </div>
 
                 <!-- Seção 3: SITUAÇÃO DE ABSENTEÍSMO -->
                 <h2>3. Situação de Absenteísmo</h2>
                 <div class="form-group radio-group">
                     <label>3.1 O médico participante esteve ausente no mês de referência?</label>
-                    <label><input type="radio" name="medico-ausente" value="Sim"> Sim</label>
-                    <label><input type="radio" name="medico-ausente" value="Nao" checked> Não</label>
+                    <label><input type="radio" name="medico-ausente" value="Sim" checked> Sim</label>
+                    <label><input type="radio" name="medico-ausente" value="Nao"> Não</label>
                 </div>
                 <div id="detalhes-ausencia" class="conditional">
                     <div class="form-group">
@@ -177,17 +185,13 @@
                 <h2>4. Casos Excepcionais</h2>
                 <div class="form-group radio-group">
                     <label>4.1 Foi identificado algum caso excepcional neste acompanhamento longitudinal?</label>
-                    <label><input type="radio" name="caso-excepcional" value="Sim"> Sim</label>
-                    <label><input type="radio" name="caso-excepcional" value="Nao" checked> Não</label>
+                    <label><input type="radio" name="caso-excepcional" value="Sim" checked> Sim</label>
+                    <label><input type="radio" name="caso-excepcional" value="Nao"> Não</label>
                 </div>
                 <div id="detalhes-caso-excepcional" class="conditional">
                      <div class="form-group">
-                        <label for="quais-casos">4.2 Se sim, qual(is)?</label>
-                        <select id="quais-casos" name="quais-casos" multiple>
-                           <option>Opção A</option>
-                           <option>Opção B</option>
-                           <option>Opção C</option>
-                        </select>
+                        <label for="descricao-caso-excepcional">4.2 Descreva o caso:</label>
+                        <textarea id="descricao-caso-excepcional" name="descricao-caso-excepcional" rows="3">Mudança ocorrida desde o inicio da pandemia (Covid-19), sendo alterada a modalidade de supervisão.</textarea>
                      </div>
                 </div>
 
@@ -196,21 +200,53 @@
                 <div class="form-group">
                     <label for="objetivo-acompanhamento">5.1 Qual o objetivo deste Acompanhamento Longitudinal?</label>
                     <select id="objetivo-acompanhamento" name="objetivo-acompanhamento">
-                        <option value="Qualificacao das acoes do medico participante [acoes de nucleo]" selected>Qualificação das ações do médico participante [ações de núcleo]</option>
+                        <option value="Qualificacao das acoes apenas do medico participante" selected>Qualificação das ações apenas do médico participante</option>
                         <option value="Outro">Outro</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="tematica-principal">5.2 Qual a principal temática discutida...?</label>
-                    <button type="button">Selecionar temática</button>
+                    <label for="tematica-principal">5.2 Qual a principal temática discutida?</label>
+                    <select id="tematica-principal" name="tematica-principal">
+                        <option value="Aperfeicoamento da conduda clinica diagnostico terapeutica" selected>Aperfeiçoamento da conduda clínica diagnóstico terapêutica</option>
+                    </select>
                 </div>
                  <div class="form-group">
                     <label for="outras-tematicas">5.3 Que outra(s) temática(s) foi(ram) abordada(s)?</label>
-                    <button type="button">Selecionar outra(s) temática(s)</button>
+                    <select id="outras-tematicas" name="outras-tematicas" multiple size="5">
+                       <option value="Acesso e acolhimento com classificacao de risco">Acesso e acolhimento com classificação de risco</option>
+                       <option value="Aperfeicoamento da Conduta Clinica/Diagnostico/ Terapeutica/Reabilitacao">Aperfeiçoamento da Conduta Clínica/Diagnóstico/ Terapêutica/Reabilitação</option>
+                       <option value="Articulacao com dispositivos da rede">Articulação com dispositivos da rede (NASF, Consultório na Rua, Academia da Saúde, CAPS, UPA, SAMU, aparelhos sociais etc.)</option>
+                       <option value="Assistencia Farmaceutica">Assistência Farmacêutica</option>
+                       <option value="Avaliacao das atividades desenvolvidas na Unidade de Saude">Avaliação das atividades desenvolvidas na Unidade de Saúde</option>
+                       <option value="Avaliacao sobre a supervisao">Avaliação sobre a supervisão</option>
+                       <option value="Carga horaria/escala de trabalho e cumprimento de horario do componente pratico">Carga horária/escala de trabalho e cumprimento de horário do componente prático</option>
+                       <option value="Carga horaria/escala de trabalho e cumprimento de horario do momento de estudo">Carga horária/escala de trabalho e cumprimento de horário do momento de estudo</option>
+                       <option value="e-SUS">e-SUS</option>
+                       <option value="Humanizacao em Saude">Humanização em Saúde</option>
+                       <option value="Linhas de cuidado, regulacao em saude e redes de atencao">Linhas de cuidado, regulação em saúde e redes de atenção</option>
+                       <option value="Medicina Centrada na Pessoa">Medicina Centrada na Pessoa</option>
+                       <option value="Medicina baseada em evidencia">Medicina baseada em evidência</option>
+                       <option value="Gestao do tempo">Gestão do tempo</option>
+                       <option value="Participacao popular e organizacao comunitaria">Participação popular e organização comunitária</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label for="grupos-prioritarios">5.4 Qual(is) grupo(s) prioritário(s) ou linha(s) de cuidado...</label>
-                    <button type="button">Selecionar grupo(s)</button>
+                    <label>5.4 Qual(is) grupo(s) prioritário(s) ou linha(s) de cuidado foram abordados?</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="grupos-prioritarios" value="Saude indigena"> Saúde indígena</label>
+                        <label><input type="checkbox" name="grupos-prioritarios" value="Saude mental"> Saúde mental</label>
+                        <label><input type="checkbox" name="grupos-prioritarios" value="Tuberculose"> Tuberculose</label>
+                        <label><input type="checkbox" name="grupos-prioritarios" value="Saude do Adolescente"> Saúde do Adolescente</label>
+                        <label><input type="checkbox" name="grupos-prioritarios" value="Urgencia e emergencia"> Urgência e emergência</label>
+                        <label><input type="checkbox" name="grupos-prioritarios" value="Outros"> Outros</label>
+                        <label><input type="checkbox" name="grupos-prioritarios" value="Nao se aplica"> Não se aplica</label>
+                    </div>
+                </div>
+                <div id="grupo-prioritario-outro-detalhes" class="conditional">
+                    <div class="form-group">
+                        <label for="grupo-prioritario-outro-texto">Outros - Descreva:</label>
+                        <input type="text" id="grupo-prioritario-outro-texto" name="grupo-prioritario-outro-texto">
+                    </div>
                 </div>
                 <div class="form-group radio-group">
                     <label>5.5 O médico participante teve alguma dificuldade com a conduta clínica em algum atendimento?</label>
@@ -231,8 +267,10 @@
                 <!-- Seção 6: OFERTAS EDUCACIONAIS -->
                 <h2>6. Ofertas Educacionais</h2>
                 <div class="form-group">
-                    <label for="ofertas-pedagogicas">6.1 Qual(is) oferta(s) pedagógica(s) foi/foram disponibilizada(s)...?</label>
-                    <button type="button">Selecionar oferta(s)</button>
+                    <label for="ofertas-pedagogicas">6.1 Qual(is) oferta(s) pedagógica(s) foi/foram disponibilizada(s)?</label>
+                    <select id="ofertas-pedagogicas" name="ofertas-pedagogicas">
+                        <option value="Portal Saude Baseado em Evidencia" selected>Portal Saúde Baseado em Evidência</option>
+                    </select>
                 </div>
 
             </fieldset>
@@ -333,7 +371,7 @@
     </div>
 
     <script>
-        // Script para campos condicionais (sem alterações)
+        // Script para campos condicionais
         document.addEventListener('DOMContentLoaded', function() {
             function handleConditionalDisplay(radioName, conditionalElementId, showOnValue) {
                 const radios = document.querySelectorAll(`input[name="${radioName}"]`);
@@ -346,6 +384,8 @@
                             conditionalElement.style.display = 'none';
                         }
                     });
+                    // Trigger a change on load to set initial state
+                    if(radio.checked) radio.dispatchEvent(new Event('change'));
                 });
             }
             handleConditionalDisplay('contato-previo', 'motivo-contato-previo-nao', 'Nao');

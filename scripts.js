@@ -111,6 +111,57 @@ document.addEventListener('DOMContentLoaded', function() {
     // Evento para limpar o formulário ao clicar em "Cadastrar Novo Médico"
     newDoctorBtn.addEventListener('click', clearFormForNewDoctor);
 
+    // --- Lógica para popular os campos de data e campos condicionais ---
+
+    function populateDateSelectors() {
+        const diaSelect = document.getElementById('data-supervisao-dia');
+        const mesSelect = document.getElementById('data-supervisao-mes');
+        const anoSelect = document.getElementById('data-supervisao-ano');
+        const currentYear = new Date().getFullYear();
+
+        // Popular dias (1-31)
+        for (let i = 1; i <= 31; i++) {
+            diaSelect.add(new Option(i, i));
+        }
+
+        // Popular meses
+        const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        meses.forEach((mes, index) => {
+            mesSelect.add(new Option(mes, index + 1));
+        });
+
+        // Popular anos (ano atual + 1 e -1)
+        for (let i = currentYear + 1; i >= currentYear - 2; i--) {
+            anoSelect.add(new Option(i, i));
+        }
+
+        // Pré-selecionar data atual
+        const today = new Date();
+        diaSelect.value = today.getDate();
+        mesSelect.value = today.getMonth() + 1;
+        anoSelect.value = today.getFullYear();
+    }
+
+    function handleCheckboxConditional(checkboxSelector, conditionalElementId) {
+        const checkbox = document.querySelector(checkboxSelector);
+        const conditionalElement = document.getElementById(conditionalElementId);
+
+        if (checkbox && conditionalElement) {
+            checkbox.addEventListener('change', function() {
+                conditionalElement.style.display = this.checked ? 'block' : 'none';
+            });
+            // Esconde o campo inicialmente se o checkbox não estiver marcado
+            conditionalElement.style.display = checkbox.checked ? 'block' : 'none';
+        }
+    }
+
+
+    // --- Inicialização ---
+
     // Carregar o seletor de médicos ao iniciar a página
     loadDoctorSelector();
+    // Popular os seletores de data
+    populateDateSelectors();
+    // Configurar a lógica condicional para o checkbox "Outros"
+    handleCheckboxConditional('input[name="grupos-prioritarios"][value="Outros"]', 'grupo-prioritario-outro-detalhes');
 });
