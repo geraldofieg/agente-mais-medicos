@@ -3,111 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulário Mais Médicos - Cadastro Inicial</title>
+    <title>Ferramenta de Automação de Relatórios - Mais Médicos</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="container">
-        <h1>Formulário Mais Médicos</h1>
+        <h1>Relatório Mensal - Mais Médicos</h1>
 
-        <div class="actions-container">
-            <div class="action-box">
-                <label for="new-doctor-btn">Novo Cadastro</label>
-                <button type="button" id="new-doctor-btn" class="action-btn">Cadastrar Novo Médico</button>
-                <p>Clique para limpar o formulário e inserir um novo médico.</p>
-            </div>
-            <div class="action-box">
-                <label for="doctor-selector">Carregar Dados Existentes</label>
-                <select id="doctor-selector" name="doctor-selector">
-                    <option value="">-- Selecione um médico --</option>
-                </select>
-                <p>Selecione um médico para ver ou editar seus dados.</p>
-            </div>
-        </div>
-
-        <form id="cadastro-form">
-
-            <!-- ABA 1: IDENTIFICAÇÃO -->
-            <fieldset>
-                <legend>1. IDENTIFICAÇÃO</legend>
-
-                <!-- Seção 3: DADOS PESSOAIS DO MÉDICO PARTICIPANTE -->
-                <h2>3. Dados Pessoais do Médico Participante</h2>
-                <div class="form-group">
-                    <label for="medico-nome">3.1 Nome do Médico:</label>
-                    <input type="text" id="medico-nome" name="medico-nome" placeholder="Nome Completo do Médico">
-                </div>
-                <div class="form-group">
-                    <label for="medico-cpf">3.2 CPF do Médico:</label>
-                    <input type="text" id="medico-cpf" name="medico-cpf" placeholder="CPF (somente números)" maxlength="11" pattern="[0-9]{11}" title="Digite o CPF com 11 dígitos, sem pontos ou traços.">
-                </div>
-                <div class="form-group">
-                    <label for="medico-email">3.3 E-mail do Médico:</label>
-                    <input type="email" id="medico-email" name="medico-email" placeholder="email@dominio.com">
-                </div>
-
-                <!-- Seção 4: LOCAL DE ATUAÇÃO DO MÉDICO PARTICIPANTE -->
-                <h2>4. Local de Atuação do Médico Participante</h2>
-                <div class="form-group">
-                    <label for="perfil-territorio">4.1 Indique o perfil do território de supervisão:</label>
-                    <select id="perfil-territorio" name="perfil-territorio">
-                        <option value="Perfil 01">Perfil 01 - Distrito Federal, capitais...</option>
-                        <option value="Perfil 02" selected>Perfil 02 - Municípios situados na Amazônia Legal...</option>
-                        <option value="Perfil 03">Perfil 03 - Distrito Sanitário Especial Indígena</option>
-                        <option value="Perfil 04">Perfil 04 - Demais municípios</option>
+        <!-- Seção de Gerenciamento de Médicos -->
+        <fieldset class="management-section">
+            <legend>Gerenciamento de Supervisionados</legend>
+            <div class="form-group">
+                <label for="doctor-selector">Selecione o Médico para o Relatório:</label>
+                <div class="doctor-selection-group">
+                    <select id="doctor-selector" name="doctor-selector">
+                        <option value="">-- Selecione um médico da sua lista --</option>
                     </select>
+                    <button type="button" id="manage-doctors-btn">Cadastrar/Editar Médicos</button>
                 </div>
-                <div class="form-group">
-                    <label for="municipio-nome">4.2 Nome do Município:</label>
-                    <input type="text" id="municipio-nome" name="municipio-nome">
-                </div>
-                <div class="form-group">
-                    <label for="municipio-uf">4.3 UF do Município:</label>
-                    <input type="text" id="municipio-uf" name="municipio-uf" maxlength="2">
-                </div>
-                <div class="form-group">
-                    <label for="regiao-saude">4.4 Região de saúde:</label>
-                    <input type="text" id="regiao-saude" name="regiao-saude">
-                </div>
-                <div class="form-group">
-                    <label for="unidade-saude">4.5 Unidade de Saúde (CNES/Nome):</label>
-                    <input type="text" id="unidade-saude" name="unidade-saude" placeholder="Digite o código CNES ou nome">
-                </div>
-                <div class="form-group radio-group">
-                    <label>4.6 Qual a localização da Unidade de Saúde?</label>
-                    <label><input type="radio" name="localizacao-unidade" value="Urbana"> Urbana</label>
-                    <label><input type="radio" name="localizacao-unidade" value="Rural"> Rural</label>
-                </div>
-                <div class="form-group">
-                    <label for="total-usuarios">4.7 Qual o total de usuários cadastrados na Unidade de Saúde?</label>
-                    <input type="text" id="total-usuarios" name="total-usuarios">
-                </div>
-                <div class="form-group">
-                    <label for="modalidade-equipe">4.8 Qual a modalidade de equipe de Atenção Básica?</label>
-                    <select id="modalidade-equipe" name="modalidade-equipe">
-                        <option value="Estrategia Saude da Familia" selected>Estratégia Saúde da Família</option>
-                        <option value="Outra">Outra</option>
-                    </select>
-                </div>
-                <div class="form-group radio-group">
-                    <label>4.9 A Unidade de Saúde possui mais de uma equipe de saúde?</label>
-                    <label><input type="radio" name="mais-de-uma-equipe" value="Sim"> Sim</label>
-                    <label><input type="radio" name="mais-de-uma-equipe" value="Nao"> Não</label>
-                </div>
-                <div class="form-group">
-                    <label for="responsavel-unidade">4.10 Qual o nome do responsável pela Unidade de Saúde?</label>
-                    <input type="text" id="responsavel-unidade" name="responsavel-unidade">
-                </div>
-                <div class="form-group">
-                    <label for="telefone-unidade">4.11 Qual o número de telefone da Unidade de Saúde ou do seu responsável?</label>
-                    <input type="tel" id="telefone-unidade" name="telefone-unidade">
-                </div>
-                <div class="form-group">
-                    <label for="email-unidade">4.12 Qual o e-mail da Unidade de Saúde ou do seu responsável?</label>
-                    <input type="email" id="email-unidade" name="email-unidade">
-                </div>
-            </fieldset>
+                <p>Primeiro, selecione um médico. Se a lista estiver vazia, clique em "Cadastrar/Editar" para adicionar sua equipe.</p>
+            </div>
+        </fieldset>
+
+        <!-- Formulário Principal do Relatório (inicialmente desabilitado) -->
+        <form id="report-form" class="hidden">
+            <h2 id="report-header">Preenchendo relatório para: <span></span></h2>
 
             <!-- ABA 2: PROCESSO DE SUPERVISÃO -->
             <fieldset>
@@ -116,78 +37,60 @@
                 <!-- Seção 1: DATA DO ACOMPANHAMENTO LONGITUDINAL -->
                 <h2>1. Data do Acompanhamento Longitudinal</h2>
                 <div class="form-group">
-                    <label for="data-supervisao">1.1 Data da supervisão:</label>
-                    <input type="date" id="data-supervisao" name="data-supervisao">
-                </div>
-                <div class="form-group">
-                    <label for="horario-inicio">1.2 Horário de início:</label>
-                    <input type="time" id="horario-inicio" name="horario-inicio">
-                </div>
-                <div class="form-group">
-                    <label for="horario-termino">1.3 Horário de término:</label>
-                    <input type="time" id="horario-termino" name="horario-termino">
+                    <label for="data-supervisao-dia">1.1 Data da supervisão:</label>
+                    <div class="date-input-group">
+                        <input type="text" id="data-supervisao-dia" name="data-supervisao-dia" placeholder="DD" maxlength="2" inputmode="numeric" pattern="[0-9]*">
+                        <input type="text" id="data-supervisao-mes" name="data-supervisao-mes" placeholder="MM" maxlength="2" inputmode="numeric" pattern="[0-9]*">
+                        <input type="text" id="data-supervisao-ano" name="data-supervisao-ano" placeholder="AAAA" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+                    </div>
                 </div>
 
-                <!-- Seção 2: REALIZAÇÃO DE CONTATO PRÉVIO -->
-                <h2>2. Realização de Contato Prévio</h2>
+                <!-- Seção 2: REALIZAÇÃO DE CONTATO E MODALIDADE -->
+                <h2>2. Contato e Modalidade</h2>
                 <div class="form-group radio-group">
                     <label>2.1 Houve contato prévio para agendamento da supervisão?</label>
-                    <label><input type="radio" name="contato-previo" value="Sim" checked> Sim</label>
-                    <label><input type="radio" name="contato-previo" value="Nao"> Não</label>
-                </div>
-                <div id="motivo-contato-previo-nao" class="conditional">
-                    <div class="form-group">
-                        <label for="motivo-nao-contato">2.2 Se não, por quê?</label>
-                        <textarea id="motivo-nao-contato" name="motivo-nao-contato" rows="3"></textarea>
+                    <div>
+                        <label><input type="radio" name="contato-previo" value="Sim"> Sim</label>
+                        <label><input type="radio" name="contato-previo" value="Nao" checked> Não</label>
                     </div>
+                </div>
+                <div class="form-group">
+                    <label for="modalidade-supervisao">2.2 Modalidade da Supervisão:</label>
+                    <select id="modalidade-supervisao" name="modalidade-supervisao">
+                        <option value="Webconferencia" selected>Webconferência</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="justificativa-modalidade">2.3 Justificativa da modalidade:</label>
+                    <textarea id="justificativa-modalidade" name="justificativa-modalidade" rows="3">Não foi realizado nenhuma supervisão presencial na gestão do supervisor atual devido mudança na modalidade de acompanhamento do programa.</textarea>
                 </div>
 
                 <!-- Seção 3: SITUAÇÃO DE ABSENTEÍSMO -->
                 <h2>3. Situação de Absenteísmo</h2>
                 <div class="form-group radio-group">
                     <label>3.1 O médico participante esteve ausente no mês de referência?</label>
-                    <label><input type="radio" name="medico-ausente" value="Sim"> Sim</label>
-                    <label><input type="radio" name="medico-ausente" value="Nao" checked> Não</label>
+                    <div>
+                        <label><input type="radio" name="medico-ausente" value="Sim" checked> Sim</label>
+                        <label><input type="radio" name="medico-ausente" value="Nao"> Não</label>
+                    </div>
                 </div>
                 <div id="detalhes-ausencia" class="conditional">
-                    <div class="form-group">
-                        <label for="motivo-ausencia">3.2 Se sim, qual o motivo?</label>
-                        <select id="motivo-ausencia" name="motivo-ausencia">
-                            <option value="">Selecione o motivo</option>
-                            <option value="Férias">Férias</option>
-                            <option value="Licença Médica">Licença Médica</option>
-                            <option value="Outro">Outro</option>
-                        </select>
-                    </div>
-                    <div class="form-group radio-group">
-                        <label>3.3 A ausência foi comunicada previamente ao gestor local?</label>
-                        <label><input type="radio" name="comunicou-gestor" value="Sim"> Sim</label>
-                        <label><input type="radio" name="comunicou-gestor" value="Nao"> Não</label>
-                        <label><input type="radio" name="comunicou-gestor" value="Nao se aplica"> Não se aplica</label>
-                    </div>
-                    <div class="form-group radio-group">
-                        <label>3.4 A ausência foi comunicada previamente à Supervisão Acadêmica?</label>
-                        <label><input type="radio" name="comunicou-supervisao" value="Sim"> Sim</label>
-                        <label><input type="radio" name="comunicou-supervisao" value="Nao"> Não</label>
-                        <label><input type="radio" name="comunicou-supervisao" value="Nao se aplica"> Não se aplica</label>
-                    </div>
+                    <!-- Detalhes da ausência aqui -->
                 </div>
 
                 <!-- Seção 4: CASOS EXCEPCIONAIS -->
                 <h2>4. Casos Excepcionais</h2>
                 <div class="form-group radio-group">
                     <label>4.1 Foi identificado algum caso excepcional neste acompanhamento longitudinal?</label>
-                    <label><input type="radio" name="caso-excepcional" value="Sim"> Sim</label>
-                    <label><input type="radio" name="caso-excepcional" value="Nao" checked> Não</label>
+                    <div>
+                        <label><input type="radio" name="caso-excepcional" value="Sim" checked> Sim</label>
+                        <label><input type="radio" name="caso-excepcional" value="Nao"> Não</label>
+                    </div>
                 </div>
                 <div id="detalhes-caso-excepcional" class="conditional">
                      <div class="form-group">
-                        <label for="quais-casos">4.2 Se sim, qual(is)?</label>
-                        <select id="quais-casos" name="quais-casos" multiple>
-                           <option>Opção A</option>
-                           <option>Opção B</option>
-                           <option>Opção C</option>
-                        </select>
+                        <label for="descricao-caso-excepcional">4.2 Descreva o caso:</label>
+                        <textarea id="descricao-caso-excepcional" name="descricao-caso-excepcional" rows="3">Mudança ocorrida desde o inicio da pandemia (Covid-19), sendo alterada a modalidade de supervisão.</textarea>
                      </div>
                 </div>
 
@@ -196,43 +99,74 @@
                 <div class="form-group">
                     <label for="objetivo-acompanhamento">5.1 Qual o objetivo deste Acompanhamento Longitudinal?</label>
                     <select id="objetivo-acompanhamento" name="objetivo-acompanhamento">
-                        <option value="Qualificacao das acoes do medico participante [acoes de nucleo]" selected>Qualificação das ações do médico participante [ações de núcleo]</option>
+                        <option value="Qualificacao das acoes apenas do medico participante" selected>Qualificação das ações apenas do médico participante</option>
                         <option value="Outro">Outro</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="tematica-principal">5.2 Qual a principal temática discutida...?</label>
-                    <button type="button">Selecionar temática</button>
+                    <label for="tematica-principal">5.2 Qual a principal temática discutida?</label>
+                    <select id="tematica-principal" name="tematica-principal">
+                        <option value="Aperfeicoamento da conduda clinica diagnostico terapeutica" selected>Aperfeiçoamento da conduda clínica diagnóstico terapêutica</option>
+                        <!-- Outras opções podem ser adicionadas aqui se necessário -->
+                    </select>
                 </div>
                  <div class="form-group">
                     <label for="outras-tematicas">5.3 Que outra(s) temática(s) foi(ram) abordada(s)?</label>
-                    <button type="button">Selecionar outra(s) temática(s)</button>
+                    <select id="outras-tematicas" name="outras-tematicas">
+                       <option value="">-- Selecione uma temática --</option>
+                       <option value="Acesso e acolhimento com classificacao de risco">Acesso e acolhimento com classificação de risco</option>
+                       <option value="Aperfeicoamento da Conduta Clinica/Diagnostico/ Terapeutica/Reabilitacao">Aperfeiçoamento da Conduta Clínica/Diagnóstico/ Terapêutica/Reabilitação</option>
+                       <option value="Articulacao com dispositivos da rede">Articulação com dispositivos da rede (NASF, etc.)</option>
+                       <option value="Assistencia Farmaceutica">Assistência Farmacêutica</option>
+                       <option value="Avaliacao das atividades desenvolvidas na Unidade de Saude">Avaliação das atividades desenvolvidas na Unidade de Saúde</option>
+                       <option value="Avaliacao sobre a supervisao">Avaliação sobre a supervisão</option>
+                       <option value="Carga horaria/escala de trabalho e cumprimento de horario do componente pratico">Carga horária/escala de trabalho (prático)</option>
+                       <option value="Carga horaria/escala de trabalho e cumprimento de horario do momento de estudo">Carga horária/escala de trabalho (estudo)</option>
+                       <option value="e-SUS">e-SUS</option>
+                       <option value="Humanizacao em Saude">Humanização em Saúde</option>
+                       <option value="Linhas de cuidado, regulacao em saude e redes de atencao">Linhas de cuidado, regulação e redes de atenção</option>
+                       <option value="Medicina Centrada na Pessoa">Medicina Centrada na Pessoa</option>
+                       <option value="Medicina baseada em evidencia">Medicina baseada em evidência</option>
+                       <option value="Gestao do tempo">Gestão do tempo</option>
+                       <option value="Participacao popular e organizacao comunitaria">Participação popular e organização comunitária</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label for="grupos-prioritarios">5.4 Qual(is) grupo(s) prioritário(s) ou linha(s) de cuidado...</label>
-                    <button type="button">Selecionar grupo(s)</button>
+                    <label>5.4 Qual(is) grupo(s) prioritário(s) ou linha(s) de cuidado foram abordados?</label>
+                    <div class="radio-group-vertical">
+                        <label><input type="radio" name="grupos-prioritarios" value="Saude indigena"> Saúde indígena</label>
+                        <label><input type="radio" name="grupos-prioritarios" value="Saude mental"> Saúde mental</label>
+                        <label><input type="radio" name="grupos-prioritarios" value="Tuberculose"> Tuberculose</label>
+                        <label><input type="radio" name="grupos-prioritarios" value="Saude do Adolescente"> Saúde do Adolescente</label>
+                        <label><input type="radio" name="grupos-prioritarios" value="Urgencia e emergencia"> Urgência e emergência</label>
+                        <label><input type="radio" name="grupos-prioritarios" value="Outros"> Outros</label>
+                        <label><input type="radio" name="grupos-prioritarios" value="Nao se aplica"> Não se aplica</label>
+                    </div>
+                </div>
+                <div id="grupo-prioritario-outro-detalhes" class="conditional">
+                    <div class="form-group">
+                        <label for="grupo-prioritario-outro-texto">Outros - Descreva:</label>
+                        <input type="text" id="grupo-prioritario-outro-texto" name="grupo-prioritario-outro-texto">
+                    </div>
                 </div>
                 <div class="form-group radio-group">
                     <label>5.5 O médico participante teve alguma dificuldade com a conduta clínica em algum atendimento?</label>
-                    <label><input type="radio" name="dificuldade-conduta" value="Sim"> Sim</label>
-                    <label><input type="radio" name="dificuldade-conduta" value="Nao" checked> Não</label>
+                    <div>
+                        <label><input type="radio" name="dificuldade-conduta" value="Sim"> Sim</label>
+                        <label><input type="radio" name="dificuldade-conduta" value="Nao" checked> Não</label>
+                    </div>
                 </div>
                 <div id="detalhes-dificuldade" class="conditional">
-                    <div class="form-group">
-                        <label for="base-dificuldade">5.6 Em que se baseou a dificuldade?</label>
-                        <button type="button">Selecionar dificuldade</button>
-                    </div>
-                    <div class="form-group">
-                        <label for="descricao-dificuldade">5.7 Descreva a(s) situação(ões) verificada(s):</label>
-                        <textarea id="descricao-dificuldade" name="descricao-dificuldade" rows="3"></textarea>
-                    </div>
+                    <!-- Detalhes da dificuldade aqui -->
                 </div>
 
                 <!-- Seção 6: OFERTAS EDUCACIONAIS -->
                 <h2>6. Ofertas Educacionais</h2>
                 <div class="form-group">
-                    <label for="ofertas-pedagogicas">6.1 Qual(is) oferta(s) pedagógica(s) foi/foram disponibilizada(s)...?</label>
-                    <button type="button">Selecionar oferta(s)</button>
+                    <label for="ofertas-pedagogicas">6.1 Qual(is) oferta(s) pedagógica(s) foi/foram disponibilizada(s)?</label>
+                    <select id="ofertas-pedagogicas" name="ofertas-pedagogicas">
+                        <option value="Portal Saude Baseado em Evidencia" selected>Portal Saúde Baseado em Evidência</option>
+                    </select>
                 </div>
 
             </fieldset>
@@ -281,22 +215,28 @@
                 <legend>5. OCORRÊNCIAS</legend>
                 <div class="form-group radio-group">
                     <label>1.1 Você identificou alguma situação que precisa ser informada ao Tutor?</label>
-                    <label><input type="radio" name="informar-tutor" value="Sim"> Sim</label>
-                    <label><input type="radio" name="informar-tutor" value="Nao"> Não</label>
-                    <label><input type="radio" name="informar-tutor" value="Nao se aplica" checked> Não se aplica</label>
+                    <div>
+                        <label><input type="radio" name="informar-tutor" value="Sim"> Sim</label>
+                        <label><input type="radio" name="informar-tutor" value="Nao"> Não</label>
+                        <label><input type="radio" name="informar-tutor" value="Nao se aplica" checked> Não se aplica</label>
+                    </div>
                 </div>
                 <div id="detalhes-ocorrencia" class="conditional">
                     <div class="form-group radio-group">
                         <label>1.2 Classificação da ocorrência:</label>
-                        <label><input type="radio" name="classificacao-ocorrencia" value="Negativa"> Negativa</label>
-                        <label><input type="radio" name="classificacao-ocorrencia" value="Nao se aplica"> Não se aplica</label>
+                        <div>
+                            <label><input type="radio" name="classificacao-ocorrencia" value="Negativa"> Negativa</label>
+                            <label><input type="radio" name="classificacao-ocorrencia" value="Nao se aplica"> Não se aplica</label>
+                        </div>
                     </div>
                     <div class="form-group radio-group">
                         <label>1.3 Gravidade da ocorrência:</label>
-                        <label><input type="radio" name="gravidade-ocorrencia" value="Baixa"> Baixa</label>
-                        <label><input type="radio" name="gravidade-ocorrencia" value="Media"> Média</label>
-                        <label><input type="radio" name="gravidade-ocorrencia" value="Alta"> Alta</label>
-                        <label><input type="radio" name="gravidade-ocorrencia" value="Nao se aplica"> Não se aplica</label>
+                        <div>
+                            <label><input type="radio" name="gravidade-ocorrencia" value="Baixa"> Baixa</label>
+                            <label><input type="radio" name="gravidade-ocorrencia" value="Media"> Média</label>
+                            <label><input type="radio" name="gravidade-ocorrencia" value="Alta"> Alta</label>
+                            <label><input type="radio" name="gravidade-ocorrencia" value="Nao se aplica"> Não se aplica</label>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="descricao-ocorrencia">1.4 Descreva a ocorrência:</label>
@@ -328,34 +268,113 @@
                 </div>
             </fieldset>
 
-            <button type="submit">Salvar e Exportar Dados para Automação</button>
+            <button type="submit">Gerar Arquivo JSON para Automação</button>
         </form>
+
     </div>
 
-    <script>
-        // Script para campos condicionais (sem alterações)
-        document.addEventListener('DOMContentLoaded', function() {
-            function handleConditionalDisplay(radioName, conditionalElementId, showOnValue) {
-                const radios = document.querySelectorAll(`input[name="${radioName}"]`);
-                const conditionalElement = document.getElementById(conditionalElementId);
-                radios.forEach(radio => {
-                    radio.addEventListener('change', function() {
-                        if (this.value === showOnValue) {
-                            conditionalElement.style.display = 'block';
-                        } else {
-                            conditionalElement.style.display = 'none';
-                        }
-                    });
-                });
-            }
-            handleConditionalDisplay('contato-previo', 'motivo-contato-previo-nao', 'Nao');
-            handleConditionalDisplay('medico-ausente', 'detalhes-ausencia', 'Sim');
-            handleConditionalDisplay('caso-excepcional', 'detalhes-caso-excepcional', 'Sim');
-            handleConditionalDisplay('dificuldade-conduta', 'detalhes-dificuldade', 'Sim');
-            handleConditionalDisplay('informar-tutor', 'detalhes-ocorrencia', 'Sim');
-        });
-    </script>
-    <script src="scripts.js"></script>
+    <!-- Modal para Gerenciamento de Médicos -->
+    <div id="doctor-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Gerenciar Médicos Supervisionados</h2>
+            <div class="doctor-list-container">
+                <label>Médicos Cadastrados:</label>
+                <ul id="doctor-list">
+                    <!-- Lista de médicos será populada aqui -->
+                </ul>
+            </div>
+            <hr>
+            <h3>Formulário de Cadastro/Edição</h3>
+            <form id="doctor-form">
+                <input type="hidden" id="doctor-id" name="doctor-id"> <!-- Para edição -->
+                <!-- ABA 1: IDENTIFICAÇÃO (Agora dentro do Modal) -->
+                <fieldset>
+                    <legend>1. IDENTIFICAÇÃO DO SUPERVISIONADO</legend>
+                    <!-- Seção 3: DADOS PESSOAIS DO MÉDICO PARTICIPANTE -->
+                    <h2>3. Dados Pessoais do Médico Participante</h2>
+                    <div class="form-group">
+                        <label for="medico-nome">3.1 Nome do Médico:</label>
+                        <input type="text" id="medico-nome" name="medico-nome" placeholder="Nome Completo do Médico" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="medico-cpf">3.2 CPF do Médico:</label>
+                        <input type="text" id="medico-cpf" name="medico-cpf" placeholder="CPF (somente números)" maxlength="11" pattern="[0-9]{11}" title="Digite o CPF com 11 dígitos." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="medico-email">3.3 E-mail do Médico:</label>
+                        <input type="email" id="medico-email" name="medico-email" placeholder="email@dominio.com">
+                    </div>
 
+                    <!-- Seção 4: LOCAL DE ATUAÇÃO DO MÉDICO PARTICIPANTE -->
+                    <h2>4. Local de Atuação do Médico Participante</h2>
+                    <div class="form-group">
+                        <label for="perfil-territorio">4.1 Indique o perfil do território de supervisão:</label>
+                        <select id="perfil-territorio" name="perfil-territorio">
+                            <option value="Perfil 01">Perfil 01 - Distrito Federal, capitais...</option>
+                            <option value="Perfil 02" selected>Perfil 02 - Municípios situados na Amazônia Legal...</option>
+                            <option value="Perfil 03">Perfil 03 - Distrito Sanitário Especial Indígena</option>
+                            <option value="Perfil 04">Perfil 04 - Demais municípios</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="municipio-nome">4.2 Nome do Município:</label>
+                        <input type="text" id="municipio-nome" name="municipio-nome">
+                    </div>
+                    <div class="form-group">
+                        <label for="municipio-uf">4.3 UF do Município:</label>
+                        <input type="text" id="municipio-uf" name="municipio-uf" maxlength="2">
+                    </div>
+                    <div class="form-group">
+                        <label for="regiao-saude">4.4 Região de saúde:</label>
+                        <input type="text" id="regiao-saude" name="regiao-saude">
+                    </div>
+                    <div class="form-group">
+                        <label for="unidade-saude">4.5 Unidade de Saúde (CNES/Nome):</label>
+                        <input type="text" id="unidade-saude" name="unidade-saude" placeholder="Digite o código CNES ou nome">
+                    </div>
+                    <div class="form-group radio-group">
+                        <label>4.6 Qual a localização da Unidade de Saúde?</label>
+                        <label><input type="radio" name="localizacao-unidade" value="Urbana"> Urbana</label>
+                        <label><input type="radio" name="localizacao-unidade" value="Rural"> Rural</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="total-usuarios">4.7 Qual o total de usuários cadastrados na Unidade de Saúde?</label>
+                        <input type="text" id="total-usuarios" name="total-usuarios">
+                    </div>
+                    <div class="form-group">
+                        <label for="modalidade-equipe">4.8 Qual a modalidade de equipe de Atenção Básica?</label>
+                        <select id="modalidade-equipe" name="modalidade-equipe">
+                            <option value="Estrategia Saude da Familia" selected>Estratégia Saúde da Família</option>
+                            <option value="Outra">Outra</option>
+                        </select>
+                    </div>
+                    <div class="form-group radio-group">
+                        <label>4.9 A Unidade de Saúde possui mais de uma equipe de saúde?</label>
+                        <label><input type="radio" name="mais-de-uma-equipe" value="Sim"> Sim</label>
+                        <label><input type="radio" name="mais-de-uma-equipe" value="Nao"> Não</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="responsavel-unidade">4.10 Qual o nome do responsável pela Unidade de Saúde?</label>
+                        <input type="text" id="responsavel-unidade" name="responsavel-unidade">
+                    </div>
+                    <div class="form-group">
+                        <label for="telefone-unidade">4.11 Qual o número de telefone da Unidade de Saúde ou do seu responsável?</label>
+                        <input type="tel" id="telefone-unidade" name="telefone-unidade">
+                    </div>
+                    <div class="form-group">
+                        <label for="email-unidade">4.12 Qual o e-mail da Unidade de Saúde ou do seu responsável?</label>
+                        <input type="email" id="email-unidade" name="email-unidade">
+                    </div>
+                </fieldset>
+                <div class="doctor-form-actions">
+                    <button type="submit">Salvar Médico</button>
+                    <button type="button" id="clear-doctor-form-btn">Limpar Formulário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
 </body>
 </html>

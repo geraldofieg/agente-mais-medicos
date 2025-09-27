@@ -1,92 +1,170 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('cadastro-form');
+    // --- Elementos Globais ---
     const doctorSelector = document.getElementById('doctor-selector');
-    const medicoCpfInput = document.getElementById('medico-cpf');
-    const newDoctorBtn = document.getElementById('new-doctor-btn');
+    const manageDoctorsBtn = document.getElementById('manage-doctors-btn');
+    const reportForm = document.getElementById('report-form');
+    const reportHeader = document.getElementById('report-header').querySelector('span');
 
-    // Função para carregar os nomes dos médicos no seletor
-    function loadDoctorSelector() {
-        const data = JSON.parse(localStorage.getItem('maismedicos_data')) || {};
-        const doctors = Object.keys(data);
+    // --- Elementos do Modal ---
+    const modal = document.getElementById('doctor-modal');
+    const closeBtn = document.querySelector('.close-btn');
+    const doctorList = document.getElementById('doctor-list');
+    const doctorForm = document.getElementById('doctor-form');
+    const doctorIdInput = document.getElementById('doctor-id');
+    const clearDoctorFormBtn = document.getElementById('clear-doctor-form-btn');
 
-        doctorSelector.innerHTML = '<option value="">-- Selecione um médico --</option>';
+    const DOCTORS_STORAGE_KEY = 'maismedicos_doctors_data';
 
-        if (doctors.length > 0) {
-            doctors.forEach(cpf => {
-                const doctorName = data[cpf]['medico-nome'];
-                const option = document.createElement('option');
-                option.value = cpf;
-                option.textContent = doctorName ? `${doctorName} (${cpf})` : cpf;
-                doctorSelector.appendChild(option);
-            });
+    // --- Funções de Gerenciamento de Médicos (Lógica do Modal) ---
+
+    // Carrega médicos do localStorage e popula as listas
+    function loadDoctors() {
+        const doctors = JSON.parse(localStorage.getItem(DOCTORS_STORAGE_KEY)) || {};
+
+        // Limpa as listas antes de popular
+        doctorSelector.innerHTML = '<option value="">-- Selecione um médico da sua lista --</option>';
+        doctorList.innerHTML = '';
+
+        if (Object.keys(doctors).length === 0) {
+            doctorList.innerHTML = '<li>Nenhum médico cadastrado.</li>';
+        }
+
+        for (const cpf in doctors) {
+            const doctor = doctors[cpf];
+            // Popula o seletor da página principal
+            const option = new Option(`${doctor['medico-nome']} (${cpf})`, cpf);
+            doctorSelector.appendChild(option);
+
+            // Popula a lista no modal
+            const li = document.createElement('li');
+            li.textContent = `${doctor['medico-nome']} (${cpf})`;
+            li.dataset.cpf = cpf;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Excluir';
+            deleteBtn.className = 'delete-doctor-btn';
+            deleteBtn.dataset.cpf = cpf;
+            li.appendChild(deleteBtn);
+
+            doctorList.appendChild(li);
         }
     }
 
-    // Função para preencher o formulário com os dados de um médico
-    function populateForm(cpf) {
-        const data = JSON.parse(localStorage.getItem('maismedicos_data')) || {};
-        const doctorData = data[cpf];
-
-        if (doctorData) {
-            for (const key in doctorData) {
-                const input = form.elements[key];
-                if (input) {
-                    if (input.type === 'radio') {
-                        // Para radio buttons, precisamos encontrar o correto no grupo
-                        const radioGroup = document.querySelectorAll(`input[name="${key}"]`);
-                        radioGroup.forEach(radio => {
-                            radio.checked = (radio.value === doctorData[key]);
-                            // Disparar o evento de 'change' para atualizar a UI condicional
-                            const event = new Event('change');
-                            radio.dispatchEvent(event);
-                        });
-                    } else {
-                        input.value = doctorData[key];
-                    }
-                }
-            }
-        }
+    // Abre o modal
+    function openModal() {
+        modal.classList.remove('hidden');
     }
 
-    // Função para limpar o formulário para um novo cadastro
-    function clearFormForNewDoctor() {
-        form.reset();
-        doctorSelector.value = ''; // Reseta o seletor para a opção padrão
-        medicoCpfInput.focus(); // Foca no campo CPF para facilitar o novo cadastro
-        // Dispara eventos de 'change' nos radios para resetar a UI condicional
-        document.querySelectorAll('input[type="radio"]').forEach(radio => radio.dispatchEvent(new Event('change')));
-        console.log('Formulário limpo para novo cadastro.');
+    // Fecha o modal
+    function closeModal() {
+        modal.classList.add('hidden');
+        doctorForm.reset();
+        doctorIdInput.value = ''; // Limpa o ID para garantir que o próximo save seja de um novo médico
     }
 
-    // Evento para salvar os dados e exportar o JSON para automação
-    form.addEventListener('submit', function(event) {
+    // Salva ou atualiza um médico
+    doctorForm.addEventListener('submit', function(event) {
         event.preventDefault();
-
-        const formData = new FormData(form);
-        const data = {};
+        const formData = new FormData(doctorForm);
+        const doctorData = {};
         formData.forEach((value, key) => {
-            data[key] = value;
+            doctorData[key] = value;
         });
 
-        const medicoCpf = medicoCpfInput.value.trim();
-        if (!medicoCpf || medicoCpf.length !== 11 || !/^\d+$/.test(medicoCpf)) {
-            alert('O CPF é obrigatório e deve conter exatamente 11 dígitos numéricos.');
-            medicoCpfInput.focus(); // Foca no campo de CPF para facilitar a correção
+        const cpf = doctorData['medico-cpf'].trim();
+        if (!cpf || !/^\d{11}$/.test(cpf)) {
+            alert('CPF é obrigatório e deve conter 11 dígitos numéricos.');
             return;
         }
 
-        // 1. Salva/Atualiza os dados no localStorage para persistência
-        const allData = JSON.parse(localStorage.getItem('maismedicos_data')) || {};
-        allData[medicoCpf] = data;
-        localStorage.setItem('maismedicos_data', JSON.stringify(allData));
-        console.log('Dados do formulário salvos/atualizados localmente.');
-        loadDoctorSelector();
+        const doctors = JSON.parse(localStorage.getItem(DOCTORS_STORAGE_KEY)) || {};
+        doctors[cpf] = doctorData;
+        localStorage.setItem(DOCTORS_STORAGE_KEY, JSON.stringify(doctors));
 
-        // 2. Gera e baixa o arquivo JSON para o robô
-        const jsonString = JSON.stringify(data, null, 2);
+        alert('Médico salvo com sucesso!');
+        loadDoctors();
+        doctorForm.reset();
+        doctorIdInput.value = '';
+    });
+
+    // Lógica para clicar na lista de médicos (para editar ou excluir)
+    doctorList.addEventListener('click', function(event) {
+        const target = event.target;
+        const cpf = target.dataset.cpf;
+
+        if (target.tagName === 'LI') {
+            // Clicou para editar
+            const doctors = JSON.parse(localStorage.getItem(DOCTORS_STORAGE_KEY));
+            const doctorData = doctors[cpf];
+            if (doctorData) {
+                // Preenche o formulário para edição
+                for (const key in doctorData) {
+                    if (doctorForm.elements[key]) {
+                        doctorForm.elements[key].value = doctorData[key];
+                    }
+                }
+                // Garante que o ID oculto (CPF) está preenchido para o submit saber que é uma edição
+                doctorForm.elements['medico-cpf'].value = cpf;
+            }
+        } else if (target.classList.contains('delete-doctor-btn')) {
+            // Clicou para excluir
+            if (confirm(`Tem certeza que deseja excluir o médico com CPF ${cpf}?`)) {
+                const doctors = JSON.parse(localStorage.getItem(DOCTORS_STORAGE_KEY));
+                delete doctors[cpf];
+                localStorage.setItem(DOCTORS_STORAGE_KEY, JSON.stringify(doctors));
+                loadDoctors();
+                doctorForm.reset(); // Limpa o formulário caso o médico excluído estivesse sendo editado
+            }
+        }
+    });
+
+    clearDoctorFormBtn.addEventListener('click', () => {
+        doctorForm.reset();
+        doctorIdInput.value = '';
+    });
+
+
+    // --- Lógica do Formulário de Relatório Principal ---
+
+    // Mostra/esconde o formulário de relatório ao selecionar um médico
+    doctorSelector.addEventListener('change', function() {
+        if (this.value) {
+            reportForm.classList.remove('hidden');
+            reportHeader.textContent = this.options[this.selectedIndex].text;
+        } else {
+            reportForm.classList.add('hidden');
+            reportHeader.textContent = '';
+        }
+    });
+
+    // Gera o JSON final ao submeter o formulário de relatório
+    reportForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const selectedCpf = doctorSelector.value;
+        if (!selectedCpf) {
+            alert('Por favor, selecione um médico para gerar o relatório.');
+            return;
+        }
+
+        // Pega os dados de identificação do médico selecionado
+        const doctors = JSON.parse(localStorage.getItem(DOCTORS_STORAGE_KEY));
+        const doctorIdentificationData = doctors[selectedCpf];
+
+        // Pega os dados do relatório mensal
+        const reportFormData = new FormData(reportForm);
+        const monthlyReportData = {};
+        reportFormData.forEach((value, key) => {
+            monthlyReportData[key] = value;
+        });
+
+        // Combina os dois conjuntos de dados
+        const finalJsonData = { ...doctorIdentificationData, ...monthlyReportData };
+
+        // Gera e baixa o arquivo JSON
+        const jsonString = JSON.stringify(finalJsonData, null, 2);
         const blob = new Blob([jsonString], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-
         const a = document.createElement('a');
         a.href = url;
         a.download = 'dados.json';
@@ -95,22 +173,44 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        alert('Dados salvos localmente e o arquivo "dados.json" foi baixado!\n\nPróximo passo: execute o robô de automação.');
+        alert('Arquivo "dados.json" gerado com sucesso!');
     });
 
-    // Evento para carregar os dados ao selecionar um médico
-    doctorSelector.addEventListener('change', function() {
-        const selectedCpf = this.value;
-        if (selectedCpf) {
-            populateForm(selectedCpf);
-        } else {
-            clearFormForNewDoctor(); // Limpa o formulário se a opção padrão for selecionada
+    // --- Lógica Condicional ---
+    function handleConditionalDisplay(radioGroupName, conditionalElementId, showOnValue) {
+        const radios = document.querySelectorAll(`input[name="${radioGroupName}"]`);
+        const conditionalElement = document.getElementById(conditionalElementId);
+
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.checked && this.value === showOnValue) {
+                    conditionalElement.classList.remove('hidden');
+                } else {
+                    conditionalElement.classList.add('hidden');
+                }
+            });
+            // Estado inicial
+            if (radio.checked && radio.value !== showOnValue) {
+                 conditionalElement.classList.add('hidden');
+            }
+        });
+    }
+
+
+    // --- Inicialização ---
+    loadDoctors();
+    manageDoctorsBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    window.addEventListener('click', function(event) {
+        if (event.target == modal) {
+            closeModal();
         }
     });
 
-    // Evento para limpar o formulário ao clicar em "Cadastrar Novo Médico"
-    newDoctorBtn.addEventListener('click', clearFormForNewDoctor);
-
-    // Carregar o seletor de médicos ao iniciar a página
-    loadDoctorSelector();
+    // Configura a lógica condicional para todos os campos relevantes
+    handleConditionalDisplay('grupos-prioritarios', 'grupo-prioritario-outro-detalhes', 'Outros');
+    handleConditionalDisplay('medico-ausente', 'detalhes-ausencia', 'Sim');
+    handleConditionalDisplay('caso-excepcional', 'detalhes-caso-excepcional', 'Sim');
+    handleConditionalDisplay('dificuldade-conduta', 'detalhes-dificuldade', 'Sim');
+    handleConditionalDisplay('informar-tutor', 'detalhes-ocorrencia', 'Sim');
 });
