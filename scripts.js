@@ -177,23 +177,33 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // --- Lógica Condicional ---
-    function handleConditionalDisplay(radioGroupName, conditionalElementId, showOnValue) {
-        const radios = document.querySelectorAll(`input[name="${radioGroupName}"]`);
+    function setupConditionalDisplay(triggerSelector, conditionalElementId, showOnValue) {
         const conditionalElement = document.getElementById(conditionalElementId);
+        if (!conditionalElement) return;
 
-        radios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.checked && this.value === showOnValue) {
-                    conditionalElement.classList.remove('hidden');
-                } else {
-                    conditionalElement.classList.add('hidden');
+        const triggerElements = document.querySelectorAll(triggerSelector);
+
+        const checkState = () => {
+            let shouldShow = false;
+            triggerElements.forEach(el => {
+                if (el.tagName === 'SELECT') {
+                    if (el.value === showOnValue) {
+                        shouldShow = true;
+                    }
+                } else if (el.type === 'radio' || el.type === 'checkbox') {
+                    if (el.checked && el.value === showOnValue) {
+                        shouldShow = true;
+                    }
                 }
             });
-            // Estado inicial
-            if (radio.checked && radio.value !== showOnValue) {
-                 conditionalElement.classList.add('hidden');
-            }
+            conditionalElement.classList.toggle('hidden', !shouldShow);
+        };
+
+        triggerElements.forEach(el => {
+            el.addEventListener('change', checkState);
         });
+
+        checkState();
     }
 
 
@@ -208,9 +218,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Configura a lógica condicional para todos os campos relevantes
-    handleConditionalDisplay('grupos-prioritarios', 'grupo-prioritario-outro-detalhes', 'Outros');
-    handleConditionalDisplay('medico-ausente', 'detalhes-ausencia', 'Sim');
-    handleConditionalDisplay('caso-excepcional', 'detalhes-caso-excepcional', 'Sim');
-    handleConditionalDisplay('dificuldade-conduta', 'detalhes-dificuldade', 'Sim');
-    handleConditionalDisplay('informar-tutor', 'detalhes-ocorrencia', 'Sim');
+    setupConditionalDisplay('input[name="grupos-prioritarios"]', 'grupo-prioritario-outro-detalhes', 'Outros');
+    setupConditionalDisplay('#outras-tematicas', 'outras-tematicas-outro-detalhes', 'Outros');
+    setupConditionalDisplay('input[name="medico-ausente"]', 'detalhes-ausencia', 'Sim');
+    setupConditionalDisplay('input[name="caso-excepcional"]', 'detalhes-caso-excepcional', 'Sim');
+    setupConditionalDisplay('input[name="dificuldade-conduta"]', 'detalhes-dificuldade', 'Sim');
+    setupConditionalDisplay('input[name="informar-tutor"]', 'detalhes-ocorrencia', 'Sim');
 });
