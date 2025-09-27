@@ -113,9 +113,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Fecha o modal de sucesso ao clicar em "OK" e recarrega a página
+    // Fecha o modal de sucesso ao clicar em "OK"
     successOkBtn.addEventListener('click', () => {
-        window.location.reload();
+        successModal.classList.add('hidden');
     });
 
     // Lógica para clicar na lista de médicos (para editar ou excluir)
