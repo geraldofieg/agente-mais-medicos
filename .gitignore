@@ -1,0 +1,12 @@
+# Ignorar arquivos de dependências do Node.js
+node_modules/
+
+# Ignorar arquivos de ambiente com dados sensíveis
+.env
+
+# Ignorar arquivo de dados gerado pela aplicação
+dados.json
+
+# Ignorar logs e arquivos temporários do sistema
+npm-debug.log
+.DS_Store
