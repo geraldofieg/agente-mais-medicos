@@ -272,3 +272,39 @@ button:hover {
 #success-ok-btn:hover {
     background-color: #218838;
 }
+
+/* Estilos para a Página de Confirmação */
+.confirmation-message {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: #f0f9f0;
+    border: 1px solid #cce8cc;
+    border-radius: 8px;
+    margin-top: 30px;
+}
+
+.confirmation-message h1 {
+    color: #28a745; /* Verde para sucesso */
+    border-bottom: none;
+    margin-bottom: 15px;
+}
+
+.confirmation-message p {
+    font-size: 1.1em;
+    margin-bottom: 30px;
+}
+
+.confirmation-message .button {
+    display: inline-block;
+    background-color: #0056b3;
+    color: white;
+    padding: 12px 30px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1em;
+    transition: background-color 0.3s;
+}
+
+.confirmation-message .button:hover {
+    background-color: #004494;
+}
