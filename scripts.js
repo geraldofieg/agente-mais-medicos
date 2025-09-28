@@ -51,15 +51,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Popula a lista no modal
                 const li = document.createElement('li');
-                li.textContent = `${doctor['medico-nome']} (${cpf})`;
-                li.dataset.cpf = cpf;
+
+                const doctorInfo = document.createElement('span');
+                doctorInfo.textContent = `${doctor['medico-nome']} (${cpf})`;
+                li.appendChild(doctorInfo);
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'doctor-actions';
+
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Editar';
+                editBtn.className = 'edit-doctor-btn';
+                editBtn.dataset.cpf = cpf;
+                actionsDiv.appendChild(editBtn);
 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.textContent = 'Excluir';
                 deleteBtn.className = 'delete-doctor-btn';
                 deleteBtn.dataset.cpf = cpf;
-                li.appendChild(deleteBtn);
+                actionsDiv.appendChild(deleteBtn);
 
+                li.appendChild(actionsDiv);
                 doctorList.appendChild(li);
             });
         });
@@ -71,11 +83,19 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.classList.remove('hidden');
     }
 
+    // Função centralizada para resetar o formulário de médico
+    function resetDoctorForm() {
+        doctorForm.reset();
+        const cpfInput = doctorForm.elements['medico-cpf'];
+        cpfInput.readOnly = false;
+        cpfInput.classList.remove('readonly');
+        doctorIdInput.value = ''; // Limpa o campo hidden
+    }
+
     // Fecha o modal
     function closeModal() {
         modal.classList.add('hidden');
-        doctorForm.reset();
-        doctorIdInput.value = '';
+        resetDoctorForm();
     }
 
     // Salva ou atualiza um médico no Firestore
@@ -97,6 +117,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Cria um documento no Firestore usando o CPF como ID único.
             await setDoc(doc(db, 'doctors', cpf), doctorData);
 
+            // Prepara o formulário para a próxima entrada antes de sair da página.
+            resetDoctorForm();
+
             // Redireciona para a página de confirmação com o nome do médico
             const doctorName = encodeURIComponent(doctorData['medico-nome']);
             window.location.href = `confirmation.html?doctorName=${doctorName}`;
@@ -114,38 +137,43 @@ document.addEventListener('DOMContentLoaded', function() {
         const target = event.target;
         const cpf = target.dataset.cpf;
 
-        if (!cpf) return;
+        if (!cpf) return; // Sai se o clique não foi em um elemento com data-cpf
 
-        if (target.tagName === 'LI') {
-            // Clicou para editar: busca os dados do médico no Firestore
+        // Ação de Edição
+        if (target.classList.contains('edit-doctor-btn')) {
             try {
                 const docRef = doc(db, 'doctors', cpf);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const doctorData = docSnap.data();
-                    // Preenche o formulário para edição
+                    // Preenche o formulário com os dados do médico
                     for (const key in doctorData) {
                         if (doctorForm.elements[key]) {
                             doctorForm.elements[key].value = doctorData[key];
                         }
                     }
-                    // Garante que o CPF esteja no campo para o submit saber que é uma edição
-                    doctorForm.elements['medico-cpf'].value = cpf;
+                    // Trava o campo CPF para evitar a criação de um novo registro
+                    const cpfInput = doctorForm.elements['medico-cpf'];
+                    cpfInput.value = cpf; // Garante que o CPF correto está no campo
+                    cpfInput.readOnly = true;
+                    cpfInput.classList.add('readonly'); // Adiciona classe para feedback visual
+
                 } else {
-                    console.log("Nenhum documento encontrado para edição!");
+                    console.log("Nenhum médico encontrado para edição com este CPF!");
                 }
             } catch (error) {
                 console.error("Erro ao buscar médico para edição: ", error);
+                alert("Erro ao carregar dados do médico para edição.");
             }
-
-        } else if (target.classList.contains('delete-doctor-btn')) {
-            // Clicou para excluir
+        }
+        // Ação de Exclusão
+        else if (target.classList.contains('delete-doctor-btn')) {
             if (confirm(`Tem certeza que deseja excluir o médico com CPF ${cpf}? Esta ação é irreversível.`)) {
                 try {
                     await deleteDoc(doc(db, 'doctors', cpf));
-                    alert('Médico excluído com sucesso do Firebase!');
-                    doctorForm.reset(); // Limpa o formulário caso o médico excluído estivesse sendo editado
+                    alert('Médico excluído com sucesso!');
+                    resetDoctorForm(); // Reseta o formulário, caso o médico excluído estivesse em edição.
                 } catch (error) {
                     console.error("Erro ao excluir médico: ", error);
                     alert("Ocorreu um erro ao excluir o médico.");
@@ -154,11 +182,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-
-    clearDoctorFormBtn.addEventListener('click', () => {
-        doctorForm.reset();
-        doctorIdInput.value = '';
-    });
+    // Limpa o formulário e reabilita o campo CPF
+    clearDoctorFormBtn.addEventListener('click', resetDoctorForm);
 
 
     // --- Lógica do Formulário de Relatório Principal ---
