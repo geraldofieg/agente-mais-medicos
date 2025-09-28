@@ -9,8 +9,8 @@
 
 // 1. URLs do Site do Governo
 const GOV_URLS = {
-    login: 'URL_DA_PAGINA_DE_LOGIN_AQUI',
-    form: 'URL_DA_PAGINA_DO_FORMULARIO_APOS_LOGIN'
+    login: 'https://sistemas.unasus.gov.br/webportfolio/',
+    form: 'https://sistemas.unasus.gov.br/webportfolio/index.php?r=post/index&user=1023&context=182'
 };
 
 // 2. Seletores de Elementos
@@ -19,9 +19,9 @@ const GOV_URLS = {
 // Exemplo: '#campoUsuario', '.botao-login'
 const SELECTORS = {
     // --- Campos de Login ---
-    userField: '#ID_DO_CAMPO_DE_USUARIO_AQUI',
-    passwordField: '#ID_DO_CAMPO_DE_SENHA_AQUI',
-    loginButton: '#ID_DO_BOTAO_DE_LOGIN_AQUI',
+    userField: '#username',
+    passwordField: '#password',
+    loginButton: '#wp-submit',
 
     // --- Botão de Salvar/Enviar o Formulário ---
     saveFormButton: '#ID_DO_BOTAO_SALVAR_NO_SITE_DO_GOVERNO',

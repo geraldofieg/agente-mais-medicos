@@ -1,30 +1,23 @@
 // =================================================================================================
-// AGENTE DE AUTOMAÇÃO COM FIREBASE PARA PREENCHIMENTO DO FORMULÁRIO "MAIS MÉDICOS"
+// AGENTE DE AUTOMAÇÃO MULTIUSUÁRIO
 // =================================================================================================
 //
 // DESCRIÇÃO:
-// Este script usa a biblioteca Playwright e Firebase Admin SDK para automatizar o preenchimento.
-// Ele escuta em tempo real a coleção 'reports' no Firestore. Quando um novo relatório com status
-// 'pending' é adicionado, o robô o processa, preenche o formulário web e atualiza o status.
-//
-// COMO USAR:
-// 1. Gere o arquivo de chave de serviço do Firebase e salve-o como 'firebase-service-account.json'.
-// 2. Configure os arquivos `.env` (credenciais) e `config.js` (URLs e seletores).
-// 3. Execute no terminal: node automation_agent.js
+// Este script escuta a coleção 'reports' no Firestore. Quando um novo relatório com status
+// 'pending' é adicionado, o robô:
+// 1. Identifica o supervisor dono do relatório.
+// 2. Busca as credenciais específicas daquele supervisor no Firestore.
+// 3. Decodifica a senha.
+// 4. Realiza o login e preenche o formulário no portal do governo.
 //
 // =================================================================================================
 
 // --- Importação de Módulos ---
-require('dotenv').config();
 const { chromium } = require('playwright');
 const admin = require('firebase-admin');
-
-// Importa as configurações (URLs e Seletores) do arquivo externo
 const { GOV_URLS, SELECTORS } = require('./config.js');
 
 // --- Configuração do Firebase Admin ---
-// O robô precisa de uma chave de serviço para se autenticar com privilégios de administrador.
-// Este arquivo é confidencial e NÃO deve ser enviado para o GitHub.
 try {
     const serviceAccount = require('./firebase-service-account.json');
     admin.initializeApp({
@@ -33,26 +26,17 @@ try {
     console.log('\x1b[32m%s\x1b[0m', '✔ Autenticado com o Firebase com sucesso!');
 } catch (error) {
     console.error('\x1b[31m%s\x1b[0m', 'ERRO: O arquivo "firebase-service-account.json" não foi encontrado ou é inválido.');
-    console.error('Por favor, siga as instruções no README para gerá-lo e colocá-lo na pasta raiz do projeto.');
-    process.exit(1); // Encerra o script se não conseguir conectar ao Firebase
+    process.exit(1);
 }
 
 const db = admin.firestore();
 
-// --- Pega as credenciais do arquivo .env ---
-const LOGIN_CREDENCIALS = {
-    user: process.env.LOGIN_USER,
-    password: process.env.LOGIN_PASSWORD,
-};
-
-
 /**
  * ===============================================================================================
- * FUNÇÃO DE PREENCHIMENTO INTELIGENTE (sem alterações)
+ * FUNÇÃO DE PREENCHIMENTO INTELIGENTE (Inalterada)
  * ===============================================================================================
  */
 async function fillFieldSmartly(page, key, selector, value) {
-    // ... (código da função mantido, pois é reutilizável e robusto)
     try {
         const elementType = await page.evaluate(sel => {
             const element = document.querySelector(sel);
@@ -65,17 +49,13 @@ async function fillFieldSmartly(page, key, selector, value) {
         }, selector);
 
         if (!elementType) {
-            console.warn(`\x1b[33m%s\x1b[0m`, `  - AVISO: Campo "${key}" não encontrado no site com o seletor "${selector}".`);
+            console.warn(`\x1b[33m%s\x1b[0m`, `  - AVISO: Campo "${key}" não encontrado com o seletor "${selector}".`);
             return;
         }
 
         switch (elementType) {
-            case 'select':
-                await page.selectOption(selector, { value: value });
-                break;
-            case 'radio':
-                await page.check(`${selector}[value="${value}"]`);
-                break;
+            case 'select': await page.selectOption(selector, { value: value }); break;
+            case 'radio': await page.check(`${selector}[value="${value}"]`); break;
             case 'checkbox':
                 if (value && value.toLowerCase() !== 'nao' && value.toLowerCase() !== 'off') {
                     await page.check(selector);
@@ -83,51 +63,79 @@ async function fillFieldSmartly(page, key, selector, value) {
                     await page.uncheck(selector);
                 }
                 break;
-            default:
-                await page.fill(selector, value);
-                break;
+            default: await page.fill(selector, value); break;
         }
         console.log(`  - [${elementType.toUpperCase()}] Campo "${key}" preenchido.`);
     } catch (e) {
         console.error('\x1b[31m%s\x1b[0m', `  - ERRO ao preencher o campo "${key}" (seletor: ${selector}).\n    Detalhes: ${e.message}`);
-        throw e; // Lança o erro para que a função principal possa tratá-lo
+        throw e;
     }
 }
 
-
 /**
  * ===============================================================================================
- * FUNÇÃO PRINCIPAL QUE PROCESSA UM ÚNICO RELATÓRIO
+ * FUNÇÃO PRINCIPAL QUE PROCESSA UM ÚNICO RELATÓRIO (LÓGICA MULTIUSUÁRIO)
  * ===============================================================================================
  */
 async function processReport(reportDoc) {
     const reportId = reportDoc.id;
     const formData = reportDoc.data();
-    console.log('\x1b[36m%s\x1b[0m', `\n▶ Processando novo relatório: ${reportId}`);
-
-    // 1. Iniciar o navegador
-    const browser = await chromium.launch({ headless: false });
-    const page = await browser.newPage();
     const reportRef = db.collection('reports').doc(reportId);
 
+    console.log('\x1b[36m%s\x1b[0m', `\n▶ Processando relatório: ${reportId} para o supervisor: ${formData.supervisorId}`);
+
+    // 1. Validar se o relatório tem um dono (supervisorId)
+    if (!formData.supervisorId) {
+        console.error('\x1b[31m%s\x1b[0m', `  - ERRO FATAL: O relatório ${reportId} não tem um 'supervisorId'.`);
+        return reportRef.update({ reportStatus: 'failed', errorMessage: 'Relatório não contém ID do supervisor.' });
+    }
+
+    // 2. Buscar as credenciais do supervisor no Firestore
+    let govCredentials;
     try {
-        // 2. Processo de Login
-        console.log(`  Navegando para a página de login...`);
-        await page.goto(GOV_URLS.login);
-        await page.fill(SELECTORS.userField, LOGIN_CREDENCIALS.user);
-        await page.fill(SELECTORS.passwordField, LOGIN_CREDENCIALS.password);
+        const credsDocRef = db.collection('supervisor_credentials').doc(formData.supervisorId);
+        const credsDoc = await credsDocRef.get();
+        if (!credsDoc.exists) {
+            throw new Error('As credenciais do supervisor não foram encontradas no banco de dados. Peça para ele salvar em "Minhas Credenciais".');
+        }
+        const credsData = credsDoc.data();
+        govCredentials = {
+            user: credsData.login,
+            password: Buffer.from(credsData.encodedPassword, 'base64').toString('utf8')
+        };
+        console.log(`  ✔ Credenciais encontradas para o supervisor ${formData.supervisorId}.`);
+    } catch (error) {
+        console.error('\x1b[31m%s\x1b[0m', `  - ERRO: Falha ao buscar ou decodificar credenciais.`, error);
+        return reportRef.update({ reportStatus: 'failed', errorMessage: error.message });
+    }
+
+    // 3. Iniciar o navegador
+    const browser = await chromium.launch({ headless: false });
+    const page = await browser.newPage();
+
+    try {
+        // 4. Processo de Login (usando as credenciais dinâmicas)
+        console.log(`  Navegando para o portal inicial...`);
+        await page.goto(GOV_URLS.login); // Vai para a página de boas-vindas
+        await page.click('a[href="/webportfolio/secured/"]'); // Clica em "Entrar"
+        await page.waitForURL('**/acesso.unasus.gov.br/**'); // Espera a página de login real carregar
+
+        console.log(`  Realizando login para o usuário: ${govCredentials.user}`);
+        await page.fill(SELECTORS.userField, govCredentials.user);
+        await page.fill(SELECTORS.passwordField, govCredentials.password);
         await page.click(SELECTORS.loginButton);
-        await page.waitForNavigation();
+
+        await page.waitForURL(GOV_URLS.form, { timeout: 20000 }); // Espera o redirecionamento para o dashboard
         console.log('\x1b[32m%s\x1b[0m', '  ✔ Login realizado com sucesso!');
 
-        // 3. Navegar até o formulário
-        if (GOV_URLS.form && GOV_URLS.form !== GOV_URLS.login) {
-            console.log(`  Navegando para a página do formulário...`);
-            await page.goto(GOV_URLS.form);
-        }
+        // 5. Navegar até o formulário (se necessário, pode já estar na página certa)
+        // Esta parte pode precisar de lógica adicional, como clicar no nome de um médico.
+        // Por agora, vamos assumir que o GOV_URLS.form é acessível diretamente após o login.
+        console.log(`  Navegando para a página do formulário...`);
+        await page.goto(GOV_URLS.form);
 
-        // 4. Preencher o formulário
-        console.log('  Iniciando o preenchimento dos campos do formulário...');
+        // 6. Preencher o formulário
+        console.log('  Iniciando o preenchimento dos campos...');
         for (const [key, value] of Object.entries(formData)) {
             const selector = SELECTORS.fields[key];
             if (selector && value) {
@@ -136,42 +144,30 @@ async function processReport(reportDoc) {
         }
         console.log('\x1b[32m%s\x1b[0m', '  ✔ Preenchimento do formulário concluído.');
 
-        // 5. Enviar o formulário
+        // 7. Enviar o formulário
         await page.click(SELECTORS.saveFormButton);
         console.log('\x1b[32m%s\x1b[0m', '  ✔ Formulário enviado com sucesso!');
 
-        // 6. Atualizar o status no Firestore para 'completed'
-        await reportRef.update({
-            reportStatus: 'completed',
-            processedAt: admin.firestore.FieldValue.serverTimestamp()
-        });
+        // 8. Atualizar o status no Firestore
+        await reportRef.update({ reportStatus: 'completed', processedAt: admin.firestore.FieldValue.serverTimestamp() });
         console.log('\x1b[32m%s\x1b[0m', `✔ Relatório ${reportId} marcado como 'completed'.`);
 
     } catch (error) {
-        console.error('\x1b[31m%s\x1b[0m', `\nERRO AO PROCESSAR O RELATÓRIO ${reportId}:`);
-        console.error(error);
-        // Atualiza o status no Firestore para 'failed'
-        await reportRef.update({
-            reportStatus: 'failed',
-            errorMessage: error.message,
-            processedAt: admin.firestore.FieldValue.serverTimestamp()
-        });
+        console.error('\x1b[31m%s\x1b[0m', `\nERRO AO PROCESSAR O RELATÓRIO ${reportId}:`, error);
+        await reportRef.update({ reportStatus: 'failed', errorMessage: error.message, processedAt: admin.firestore.FieldValue.serverTimestamp() });
     } finally {
-        // Fecha o navegador
         await browser.close();
         console.log(`\n🏁 Finalizado o processamento para o relatório: ${reportId}.`);
     }
 }
 
-
 /**
  * ===============================================================================================
- * FUNÇÃO QUE ESCUTA POR NOVOS RELATÓRIOS PENDENTES
+ * FUNÇÃO QUE ESCUTA POR NOVOS RELATÓRIOS PENDENTES (Inalterada)
  * ===============================================================================================
  */
 function listenForPendingReports() {
     console.log('\x1b[34m%s\x1b[0m', '🤖 Robô iniciado. Aguardando por novos relatórios...');
-
     const query = db.collection('reports').where('reportStatus', '==', 'pending');
 
     query.onSnapshot(snapshot => {
@@ -182,7 +178,6 @@ function listenForPendingReports() {
 
         snapshot.docChanges().forEach(change => {
             if (change.type === 'added') {
-                // Processa apenas os documentos que foram recém-adicionados
                 processReport(change.doc);
             }
         });
@@ -191,11 +186,6 @@ function listenForPendingReports() {
     });
 }
 
-// --- Validação Inicial e Execução ---
-if (!LOGIN_CREDENCIALS.user || LOGIN_CREDENCIALS.user === 'SEU_USUARIO_AQUI' || !GOV_URLS.login || GOV_URLS.login === 'URL_DA_PAGINA_DE_LOGIN_AQUI') {
-    console.error('\x1b[31m%s\x1b[0m', 'ERRO: As informações de configuração precisam ser preenchidas nos arquivos ".env" e "config.js".');
-    console.error('Por favor, siga as instruções no arquivo README.md.');
-} else {
-    // Inicia o listener
-    listenForPendingReports();
-}
+// --- Execução ---
+// A validação antiga foi removida. O robô simplesmente inicia.
+listenForPendingReports();
