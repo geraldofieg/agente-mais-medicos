@@ -20,39 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessageDiv.classList.remove('hidden');
     }
 
-    // --- LÓGICA DE CADASTRO ---
+    // A lógica de cadastro foi movida para a página `register-supervisor.html`
+    // e sua respectiva função de Cloud Function para maior segurança.
     if (signupForm) {
-        signupForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = signupForm['email'].value;
-            const password = signupForm['password'].value;
-            const passwordConfirm = signupForm['password-confirm'].value;
-
-            // Validação simples
-            if (password !== passwordConfirm) {
-                showAuthError('As senhas não coincidem.');
-                return;
-            }
-
-            // Cria o usuário no Firebase Auth
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    // Cadastro bem-sucedido, redireciona para a página principal
-                    console.log('Usuário cadastrado com sucesso:', userCredential.user);
-                    window.location.href = 'index.html';
-                })
-                .catch((error) => {
-                    // Trata os erros mais comuns
-                    let friendlyMessage = 'Ocorreu um erro ao cadastrar.';
-                    if (error.code === 'auth/email-already-in-use') {
-                        friendlyMessage = 'Este e-mail já está em uso.';
-                    } else if (error.code === 'auth/weak-password') {
-                        friendlyMessage = 'A senha é muito fraca. Use pelo menos 6 caracteres.';
-                    }
-                    console.error("Erro no cadastro:", error);
-                    showAuthError(friendlyMessage);
-                });
-        });
+        // Redireciona para a nova página de registro de supervisor
+        window.location.href = 'register-supervisor.html';
     }
 
     // --- LÓGICA DE LOGIN ---
