@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Plataforma de Automação de Relatórios</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container auth-container">
+        <h1>Acesso do Supervisor</h1>
+        <p>Faça login para gerenciar seus médicos e relatórios.</p>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="login-email">E-mail:</label>
+                <input type="email" id="login-email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="login-password">Senha:</label>
+                <input type="password" id="login-password" name="password" required>
+            </div>
+            <div id="error-message" class="error-text hidden"></div>
+            <button type="submit">Entrar</button>
+        </form>
+
+        <p class="auth-switch">
+            Ainda não tem uma conta? <a href="signup.html">Cadastre-se aqui</a>.
+        </p>
+    </div>
+
+    <script type="module" src="auth.js"></script>
+</body>
+</html>
