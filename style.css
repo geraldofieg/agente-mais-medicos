@@ -204,21 +204,49 @@ button:hover {
 #doctor-list li {
     padding: 10px;
     border-bottom: 1px solid #eee;
-    cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
 }
 #doctor-list li:hover {
     background-color: #f0f0f0;
 }
-.delete-doctor-btn {
-    background-color: #dc3545;
-    color: white;
-    border: none;
+
+/* Container for the action buttons in the doctor list */
+.doctor-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Shared style for small action buttons */
+.edit-doctor-btn, .delete-doctor-btn {
     padding: 5px 10px;
     border-radius: 4px;
+    border: none;
+    color: white;
     cursor: pointer;
+    font-size: 0.9em;
+    transition: opacity 0.3s;
+}
+
+.edit-doctor-btn:hover, .delete-doctor-btn:hover {
+    opacity: 0.85;
+}
+
+/* Specific button colors */
+.edit-doctor-btn {
+    background-color: #007bff; /* Blue for edit */
+}
+.delete-doctor-btn {
+    background-color: #dc3545; /* Red for delete */
+}
+
+/* Style for the CPF input when it's read-only */
+input.readonly {
+    background-color: #e9ecef; /* Light grey background */
+    color: #6c757d; /* Muted text color */
+    cursor: not-allowed; /* Visual cue that it's not clickable */
 }
 .doctor-form-actions {
     display: flex;
