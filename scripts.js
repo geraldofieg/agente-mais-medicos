@@ -9,13 +9,21 @@ const auth = getAuth(app);
 // Esta função verifica o estado de autenticação do usuário.
 // Ela é a primeira coisa que roda.
 onAuthStateChanged(auth, (user) => {
+    const loader = document.getElementById('loader');
+    const mainContainer = document.querySelector('.container.hidden'); // Seleciona o container principal que está escondido
+
     if (user) {
-        // Se o usuário está logado, `user` é um objeto com as informações dele.
+        // Se o usuário está logado, mostra o conteúdo e esconde o loader.
         console.log("Usuário autenticado:", user.uid);
+
+        if(loader) loader.classList.add('hidden');
+        if(mainContainer) mainContainer.classList.remove('hidden');
+
         // A página só carrega sua lógica principal se o usuário for válido.
         initializeAppLogic(user);
     } else {
         // Se o usuário não está logado, redireciona para a página de login.
+        // O loader continuará visível até que a nova página carregue, o que é o comportamento esperado.
         console.log("Nenhum usuário autenticado. Redirecionando para login.html");
         window.location.href = 'login.html';
     }
