@@ -20,9 +20,14 @@
                     <select id="doctor-selector" name="doctor-selector">
                         <option value="">-- Selecione um médico da sua lista --</option>
                     </select>
-                    <button type="button" id="manage-doctors-btn">Cadastrar/Editar Médicos</button>
+                    <!-- Botões de ação que aparecem quando um médico é selecionado -->
+                    <div id="main-doctor-actions" class="hidden">
+                        <button type="button" id="edit-selected-doctor-btn">Editar</button>
+                        <button type="button" id="delete-selected-doctor-btn">Excluir</button>
+                    </div>
+                    <button type="button" id="manage-doctors-btn">Cadastrar Novo / Ver Lista</button>
                 </div>
-                <p>Primeiro, selecione um médico. Se a lista estiver vazia, clique em "Cadastrar/Editar" para adicionar sua equipe.</p>
+                <p>Selecione um médico para preencher o relatório ou editar seus dados. Se a lista estiver vazia, clique em "Cadastrar Novo" para adicionar sua equipe.</p>
             </div>
         </fieldset>
 
