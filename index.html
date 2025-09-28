@@ -120,7 +120,7 @@
                     <select id="outras-tematicas" name="outras-tematicas">
                        <option value="">-- Selecione uma temática --</option>
                        <option value="Acesso e acolhimento com classificacao de risco">Acesso e acolhimento com classificação de risco</option>
-                       <option value="Aperfeicoamento da Conduta Clinica/Diagnostico/ Terapeutica/Reabilitacao">Aperfeiçoamento da Conduta Clínica/Diagnóstico/ Terapêutica/Reabilitação</option>
+                       <option value="Aperfeicoamento da Conduta Clinica/Diagnostico/ Terapeutica/Reabilitacao" selected>Aperfeiçoamento da Conduta Clínica/Diagnóstico/ Terapêutica/Reabilitação</option>
                        <option value="Articulacao com dispositivos da rede">Articulação com dispositivos da rede (NASF, etc.)</option>
                        <option value="Assistencia Farmaceutica">Assistência Farmacêutica</option>
                        <option value="Avaliacao das atividades desenvolvidas na Unidade de Saude">Avaliação das atividades desenvolvidas na Unidade de Saúde</option>
@@ -148,7 +148,7 @@
                         <label><input type="radio" name="grupos-prioritarios" value="Nao se aplica"> Não se aplica</label>
                     </div>
                 </div>
-                <div id="grupo-prioritario-outro-detalhes" class="conditional hidden">
+                <div id="grupo-prioritario-outro-detalhes" class="conditional">
                     <div class="form-group">
                         <label for="grupo-prioritario-outro-texto">Outros - Descreva:</label>
                         <input type="text" id="grupo-prioritario-outro-texto" name="grupo-prioritario-outro-texto">
@@ -179,38 +179,42 @@
             <!-- ABA 4: SUPORTE DO MUNICÍPIO -->
             <fieldset>
                 <legend>4. SUPORTE DO MUNICÍPIO</legend>
-                 <div class="form-group radio-group">
-                    <label>1.1 O médico participante recebe apoio da gestão municipal para qualificação da sua prática profissional?</label>
+                <div class="form-group radio-group">
+                    <label>4.1 O médico participante recebe apoio da gestão municipal para qualificação da sua prática profissional?</label>
                     <label><input type="radio" name="apoio-gestao" value="Sim" checked> Sim</label>
                     <label><input type="radio" name="apoio-gestao" value="Nao"> Não</label>
                     <label><input type="radio" name="apoio-gestao" value="Nao se aplica"> Não se aplica</label>
                 </div>
-                 <div class="form-group radio-group">
-                    <label>1.2 O médico participante dispõe de suporte clínico e pedagógico da equipe de referência do município?</label>
+                <div class="form-group">
+                    <label for="categoria-pandemia">4.2 Categoria:</label>
+                    <textarea id="categoria-pandemia" name="categoria-pandemia" rows="3">Mudança ocorrida desde o inicio da pandemia (Covid-19), sendo alterada a modalidade de supervisão.</textarea>
+                </div>
+                <div class="form-group radio-group">
+                    <label>4.3 O médico participante dispõe de suporte clínico e pedagógico da equipe de referência do município?</label>
                     <label><input type="radio" name="suporte-clinico" value="Sim" checked> Sim</label>
                     <label><input type="radio" name="suporte-clinico" value="Nao"> Não</label>
                     <label><input type="radio" name="suporte-clinico" value="Nao se aplica"> Não se aplica</label>
                 </div>
-                 <div class="form-group radio-group">
-                    <label>1.3 O médico participante tem acesso facilitado aos pontos de atenção da rede para garantir a integralidade do cuidado?</label>
+                <div class="form-group radio-group">
+                    <label>4.4 O médico participante tem acesso facilitado aos pontos de atenção da rede para garantir a integralidade do cuidado?</label>
                     <label><input type="radio" name="acesso-rede" value="Sim" checked> Sim</label>
                     <label><input type="radio" name="acesso-rede" value="Nao"> Não</label>
                     <label><input type="radio" name="acesso-rede" value="Nao se aplica"> Não se aplica</label>
                 </div>
-                 <div class="form-group radio-group">
-                    <label>1.4 O médico participante tem acesso aos sistemas de informação para registro das suas atividades?</label>
+                <div class="form-group radio-group">
+                    <label>4.5 O médico participante tem acesso aos sistemas de informação para registro das suas atividades?</label>
                     <label><input type="radio" name="acesso-sistemas" value="Sim" checked> Sim</label>
                     <label><input type="radio" name="acesso-sistemas" value="Nao"> Não</label>
                     <label><input type="radio" name="acesso-sistemas" value="Nao se aplica"> Não se aplica</label>
                 </div>
-                 <div class="form-group radio-group">
-                    <label>1.5 A gestão municipal oferece suporte para o cumprimento da carga horária de formação do médico participante?</label>
+                <div class="form-group radio-group">
+                    <label>4.6 A gestão municipal oferece suporte para o cumprimento da carga horária de formação do médico participante?</label>
                     <label><input type="radio" name="suporte-formacao" value="Sim" checked> Sim</label>
                     <label><input type="radio" name="suporte-formacao" value="Nao"> Não</label>
                     <label><input type="radio" name="suporte-formacao" value="Nao se aplica"> Não se aplica</label>
                 </div>
                 <div class="form-group">
-                    <label for="info-suporte-municipio">1.6 Descreva outras informações relevantes sobre o suporte do município:</label>
+                    <label for="info-suporte-municipio">4.7 Descreva outras informações relevantes sobre o suporte do município:</label>
                     <textarea id="info-suporte-municipio" name="info-suporte-municipio" rows="3"></textarea>
                 </div>
             </fieldset>

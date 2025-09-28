@@ -347,4 +347,11 @@ document.addEventListener('DOMContentLoaded', function() {
     handleConditionalDisplay('caso-excepcional', 'detalhes-caso-excepcional', 'Sim');
     handleConditionalDisplay('dificuldade-conduta', 'detalhes-dificuldade', 'Sim');
     handleConditionalDisplay('informar-tutor', 'detalhes-ocorrencia', 'Sim');
+
+    // Força a seleção do rádio "Outros" e a exibição do campo de texto ao carregar
+    const outrosRadio = document.querySelector('input[name="grupos-prioritarios"][value="Outros"]');
+    if (outrosRadio) {
+        outrosRadio.checked = true;
+        outrosRadio.dispatchEvent(new Event('change'));
+    }
 });
