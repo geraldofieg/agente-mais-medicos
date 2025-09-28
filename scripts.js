@@ -19,9 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const doctorIdInput = document.getElementById('doctor-id'); // Mantido para lógica de edição
     const clearDoctorFormBtn = document.getElementById('clear-doctor-form-btn');
 
-    // --- Elementos do Modal de Sucesso ---
-    const successModal = document.getElementById('success-modal');
-    const successOkBtn = document.getElementById('success-ok-btn');
+    // O modal de sucesso foi removido e substituído por uma página de confirmação.
 
     // Referência para a coleção 'doctors' no Firestore.
     // Pense nisso como o "endereço" da nossa lista de médicos no banco de dados.
@@ -97,26 +95,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             // Cria um documento no Firestore usando o CPF como ID único.
-            // A função setDoc cria ou substitui um documento.
             await setDoc(doc(db, 'doctors', cpf), doctorData);
 
-            // Em vez de um alerta, fechamos o modal de formulário e mostramos o de sucesso
-            closeModal(); // Fecha o modal de cadastro
-            successModal.classList.remove('hidden'); // Mostra o modal de sucesso
+            // Redireciona para a página de confirmação com o nome do médico
+            const doctorName = encodeURIComponent(doctorData['medico-nome']);
+            window.location.href = `confirmation.html?doctorName=${doctorName}`;
 
-            doctorForm.reset();
-            doctorIdInput.value = '';
-            // A lista irá atualizar automaticamente graças ao 'onSnapshot'
         } catch (error) {
             console.error("Erro ao salvar médico no Firestore: ", error);
             alert("Ocorreu um erro ao salvar o médico. Verifique o console para mais detalhes.");
         }
     });
 
-    // Fecha o modal de sucesso ao clicar em "OK"
-    successOkBtn.addEventListener('click', () => {
-        successModal.classList.add('hidden');
-    });
+    // O event listener para o botão 'successOkBtn' foi removido, pois o modal não existe mais.
 
     // Lógica para clicar na lista de médicos (para editar ou excluir)
     doctorList.addEventListener('click', async function(event) {
