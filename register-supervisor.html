@@ -20,6 +20,10 @@
                 <label for="register-password">Senha:</label>
                 <input type="password" id="register-password" required>
             </div>
+            <div class="form-group">
+                <label for="confirm-password">Confirmar Senha:</label>
+                <input type="password" id="confirm-password" required>
+            </div>
             <div id="error-message" class="error-text hidden"></div>
             <div id="success-message" class="success-text hidden"></div>
             <button type="submit">Registrar Supervisor</button>
@@ -40,9 +44,16 @@
             e.preventDefault();
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
 
             errorMessageDiv.classList.add('hidden');
             successMessageDiv.classList.add('hidden');
+
+            if (password !== confirmPassword) {
+                errorMessageDiv.textContent = 'As senhas não coincidem.';
+                errorMessageDiv.classList.remove('hidden');
+                return;
+            }
 
             try {
                 const createSupervisor = httpsCallable(functions, 'createSupervisor');
