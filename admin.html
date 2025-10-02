@@ -9,6 +9,23 @@
 <body>
     <div class="container">
         <h1>Painel Administrativo</h1>
+
+        <div class="form-container">
+            <h2>Criar Novo Supervisor</h2>
+            <form id="create-supervisor-form">
+                <div class="form-group">
+                    <label for="new-supervisor-email">E-mail do Supervisor:</label>
+                    <input type="email" id="new-supervisor-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-supervisor-password">Senha (mínimo 6 caracteres):</label>
+                    <input type="password" id="new-supervisor-password" required>
+                </div>
+                <button type="submit">Criar Supervisor</button>
+            </form>
+            <div id="create-feedback" class="feedback-text hidden"></div>
+        </div>
+
         <h2>Lista de Supervisores Cadastrados</h2>
 
         <div id="loading-container">

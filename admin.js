@@ -128,4 +128,43 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+    // --- LÓGICA DE CRIAÇÃO DE SUPERVISOR ---
+    const createSupervisorForm = document.getElementById('create-supervisor-form');
+    const createFeedbackDiv = document.getElementById('create-feedback');
+
+    createSupervisorForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('new-supervisor-email').value;
+        const password = document.getElementById('new-supervisor-password').value;
+        const createButton = createSupervisorForm.querySelector('button');
+
+        // Desabilita o botão para evitar submissões múltiplas
+        createButton.disabled = true;
+        createButton.textContent = 'Criando...';
+        createFeedbackDiv.classList.add('hidden');
+
+        try {
+            const createSupervisor = httpsCallable(functions, 'createSupervisor');
+            const result = await createSupervisor({ email, password });
+
+            createFeedbackDiv.textContent = result.data.message || 'Supervisor criado com sucesso!';
+            createFeedbackDiv.className = 'feedback-text success-text';
+            createFeedbackDiv.classList.remove('hidden');
+
+            // Limpa o formulário e recarrega a lista de supervisores
+            createSupervisorForm.reset();
+            await loadSupervisors();
+
+        } catch (error) {
+            console.error('Erro ao criar supervisor:', error);
+            createFeedbackDiv.textContent = `Falha ao criar: ${error.message}`;
+            createFeedbackDiv.className = 'feedback-text error-text';
+            createFeedbackDiv.classList.remove('hidden');
+        } finally {
+            // Reabilita o botão
+            createButton.disabled = false;
+            createButton.textContent = 'Criar Supervisor';
+        }
+    });
 });
