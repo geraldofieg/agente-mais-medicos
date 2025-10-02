@@ -8,8 +8,11 @@
 </head>
 <body>
     <div class="container auth-container">
-        <h1>Registrar Nova Conta de Supervisor</h1>
-        <p>Preencha os campos abaixo para criar uma nova conta de supervisor.</p>
+        <h1>Crie sua Conta de Supervisor</h1>
+        <p>
+            Utilize o <strong>mesmo e-mail e senha</strong> que você usa para acessar o portal da UNA-SUS.
+            Ao se registrar, o sistema irá conectar-se automaticamente ao portal para importar seus supervisionados.
+        </p>
 
         <form id="register-supervisor-form">
             <div class="form-group">
@@ -59,12 +62,23 @@
                 const createSupervisor = httpsCallable(functions, 'createSupervisor');
                 const result = await createSupervisor({ email, password });
 
+                // A função agora retorna um status detalhado.
                 if (result.data.success) {
-                    successMessageDiv.textContent = 'Supervisor registrado com sucesso!';
-                    successMessageDiv.classList.remove('hidden');
                     registerSupervisorForm.reset();
+
+                    // Verifica o status da importação dos médicos
+                    if (result.data.importStatus === 'success') {
+                        successMessageDiv.textContent = result.data.message;
+                        successMessageDiv.classList.remove('hidden');
+                    } else {
+                        // A conta foi criada, mas a importação falhou. Mostra como um aviso.
+                        // Usaremos o campo de erro para exibir esta mensagem de "sucesso parcial".
+                        errorMessageDiv.innerHTML = `${result.data.message}<br>Detalhe: ${result.data.errorDetails || 'Não foi possível obter detalhes do erro.'}`;
+                        errorMessageDiv.classList.remove('hidden');
+                    }
                 } else {
-                    errorMessageDiv.textContent = result.data.error || 'Ocorreu um erro ao registrar.';
+                    // Este bloco pode não ser alcançado se a função sempre lançar um erro em caso de falha.
+                    errorMessageDiv.textContent = result.data.error || 'Ocorreu um erro desconhecido.';
                     errorMessageDiv.classList.remove('hidden');
                 }
             } catch (error) {
