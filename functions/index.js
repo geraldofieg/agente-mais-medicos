@@ -4,11 +4,28 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 
 exports.createSupervisor = functions.https.onCall(async (data, context) => {
-    // Para maior segurança, adicione uma verificação para garantir que apenas
-    // usuários autorizados (ex: outros supervisores ou administradores) possam chamar esta função.
-    // if (!context.auth) {
-    //     throw new functions.https.HttpsError('unauthenticated', 'Você precisa estar autenticado para realizar esta ação.');
-    // }
+    // Verificação de autenticação e permissão de administrador
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'Você precisa estar autenticado para realizar esta ação.');
+    }
+
+    const adminEmail = "geraldofieg@gmail.com";
+    const userEmail = context.auth.token.email;
+    let claims = context.auth.token;
+
+    // Lógica para promover o primeiro administrador
+    if (userEmail === adminEmail && !claims.admin) {
+        // Define as claims de admin e supervisor para o administrador
+        await admin.auth().setCustomUserClaims(context.auth.uid, { admin: true, supervisor: true });
+        // Atualiza as claims no token para a chamada atual
+        claims = { ...claims, admin: true, supervisor: true };
+        console.log(`Usuário ${userEmail} promovido a administrador.`);
+    }
+
+    // Verifica se o usuário é administrador
+    if (!claims.admin) {
+        throw new functions.https.HttpsError('permission-denied', 'Apenas administradores podem criar novos supervisores.');
+    }
 
     const { email, password } = data;
 
@@ -51,11 +68,31 @@ exports.createSupervisor = functions.https.onCall(async (data, context) => {
 });
 
 exports.listSupervisors = functions.https.onCall(async (data, context) => {
-    // Verifica se o usuário que chama a função está autenticado.
-    // Para um ambiente de produção, seria ideal verificar se o usuário é um administrador.
-    // if (!context.auth || !context.auth.token.admin) {
-    //     throw new functions.https.HttpsError('unauthenticated', 'Apenas administradores podem executar esta ação.');
-    // }
+    // Verificação de autenticação e permissão de administrador
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'Você precisa estar autenticado para realizar esta ação.');
+    }
+
+    const adminEmail = "geraldofieg@gmail.com";
+    const userEmail = context.auth.token.email;
+    let claims = context.auth.token;
+
+    // Lógica para promover o primeiro administrador
+    if (userEmail === adminEmail && !claims.admin) {
+        // Define as claims de admin e supervisor para o administrador
+        await admin.auth().setCustomUserClaims(context.auth.uid, { admin: true, supervisor: true });
+        // Atualiza as claims no token para a chamada atual
+        claims = { ...claims, admin: true, supervisor: true };
+        console.log(`Usuário ${userEmail} promovido a administrador.`);
+    }
+
+    // Apenas administradores podem listar supervisores
+    if (!claims.admin) {
+        // Retorna uma lista vazia para não administradores em vez de um erro,
+        // para não expor a existência da função.
+        console.log(`Usuário não administrador (${userEmail}) tentou listar supervisores. Retornando lista vazia.`);
+        return { supervisors: [] };
+    }
 
     try {
         const listUsersResult = await admin.auth().listUsers();
