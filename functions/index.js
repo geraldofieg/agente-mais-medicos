@@ -264,12 +264,14 @@ async function scrapeAndStoreDoctors(supervisorId, email, password) {
         return { success: true, doctorsAdded };
 
     } catch (error) {
-        console.error("Erro durante o processo de web scraping:", error);
-        // Se o erro já for um HttpsError, propaga-o. Caso contrário, cria um novo.
+        console.error("Erro detalhado durante o web scraping:", error.message);
+        // Se o erro já for um HttpsError, propaga-o.
         if (error instanceof functions.https.HttpsError) {
             throw error;
         } else {
-            throw new functions.https.HttpsError('internal', 'Ocorreu um erro inesperado no servidor ao tentar buscar os dados da UNA-SUS.');
+            // Para outros erros (ex: erros do Puppeteer), propaga a mensagem original.
+            // Isso dá mais contexto ao cliente sobre o que falhou.
+            throw new functions.https.HttpsError('internal', error.message || 'Ocorreu um erro inesperado no servidor ao tentar buscar os dados da UNA-SUS.');
         }
     } finally {
         if (browser) {
