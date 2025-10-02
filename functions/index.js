@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const puppeteer = require("puppeteer");
 
 admin.initializeApp();
 
@@ -108,5 +109,131 @@ exports.listSupervisors = functions.https.onCall(async (data, context) => {
     } catch (error) {
         console.error("Erro ao listar supervisores:", JSON.stringify(error, null, 2));
         throw new functions.https.HttpsError('internal', 'Ocorreu um erro interno ao buscar a lista de supervisores.');
+    }
+});
+
+// Nova função para buscar médicos via web scraping
+exports.importSupervisedDoctors = functions.runWith({
+    timeoutSeconds: 300, // Aumenta o timeout para acomodar o web scraping
+    memory: '1GB',       // Aloca mais memória para o Puppeteer
+}).https.onCall(async (data, context) => {
+    // 1. Validação
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'Você precisa estar autenticado.');
+    }
+    if (!context.auth.token.supervisor) {
+        throw new functions.https.HttpsError('permission-denied', 'Apenas supervisores podem realizar esta ação.');
+    }
+
+    const { email, password } = data;
+    if (!email || !password) {
+        throw new functions.https.HttpsError('invalid-argument', 'E-mail e senha do portal UNA-SUS são obrigatórios.');
+    }
+
+    const supervisorId = context.auth.uid;
+    console.log(`Iniciando busca de dados da UNA-SUS para o supervisor: ${supervisorId}`);
+
+    let browser = null;
+    let doctorsAdded = 0;
+
+    try {
+        // 2. Iniciar o Puppeteer
+        browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+        const page = await browser.newPage();
+
+        // 3. Login no Portal UNA-SUS
+        const loginUrl = 'https://sistemas.unasus.gov.br/webportfolio/web/atividade/4/';
+        console.log(`Navegando para a página de atividades da UNA-SUS: ${loginUrl}`);
+        await page.goto(loginUrl, { waitUntil: 'networkidle2' });
+
+        // Seletores baseados na estrutura de login do Moodle/Wordpress, comum na UNA-SUS.
+        await page.type('#user_login', email);
+        await page.type('#user_pass', password);
+
+        console.log("Preenchendo credenciais e tentando fazer login...");
+
+        await Promise.all([
+            page.waitForNavigation({ waitUntil: 'networkidle2' }),
+            page.click('#wp-submit')
+        ]);
+
+        // Verifica se o login falhou.
+        if (page.url().includes('wp-login.php')) {
+            console.error("Falha no login: credenciais inválidas para o portal da UNA-SUS.");
+            throw new functions.https.HttpsError('permission-denied', 'Login ou senha inválidos no portal da UNA-SUS.');
+        }
+        console.log("Login na UNA-SUS bem-sucedido.");
+
+        // 4. Extrair os dados dos médicos
+        console.log("Buscando dados dos médicos supervisionados na página de atividades...");
+        const supervisedDoctors = await page.evaluate(() => {
+            const doctors = [];
+            // Seletor para a lista de supervisionados, baseado na nova informação.
+            const doctorElements = document.querySelectorAll('select#IdPessoa option');
+            doctorElements.forEach(option => {
+                const text = option.innerText;
+                if (option.value && text && text !== 'Selecione...') {
+                    const parts = text.split(' - ');
+                    const name = parts[0]?.trim();
+                    const cpf = parts[1]?.trim().replace(/[^\d]/g, '');
+                    if (name && cpf) {
+                        doctors.push({ name, cpf });
+                    }
+                }
+            });
+            return doctors;
+        });
+
+        if (supervisedDoctors.length === 0) {
+            console.warn("Nenhum médico encontrado na página. A estrutura do site pode ter mudado ou não há supervisionados.");
+            throw new functions.https.HttpsError('not-found', 'Não foi possível encontrar a lista de supervisionados. Verifique se há médicos cadastrados no portal da UNA-SUS ou se a estrutura do site mudou.');
+        }
+        console.log(`Encontrados ${supervisedDoctors.length} médicos na página.`);
+
+        // 5. Salvar no Firestore
+        const db = admin.firestore();
+        for (const doctor of supervisedDoctors) {
+            const sanitizedCpf = doctor.cpf.replace(/[^\d]/g, '');
+            if (sanitizedCpf.length !== 11) continue;
+
+            const docRef = db.collection('doctors').doc(sanitizedCpf);
+            const docSnap = await docRef.get();
+
+            if (!docSnap.exists) {
+                await docRef.set({
+                    'medico-nome': doctor.name,
+                    'medico-cpf': sanitizedCpf,
+                    'supervisorId': supervisorId,
+                    'medico-email': '',
+                    'municipio-nome': '',
+                    'municipio-uf': '',
+                    'perfil-territorio': 'Perfil 02',
+                    'localizacao-unidade': 'Urbana',
+                    'modalidade-equipe': 'Estrategia Saude da Familia',
+                    'createdAt': admin.firestore.FieldValue.serverTimestamp()
+                });
+                doctorsAdded++;
+                console.log(`Médico adicionado: ${doctor.name} (${sanitizedCpf})`);
+            } else {
+                console.log(`Médico já existe, pulando: ${doctor.name} (${sanitizedCpf})`);
+            }
+        }
+
+        console.log("Processo de busca de dados concluído.");
+        return { success: true, doctorsAdded };
+
+    } catch (error) {
+        console.error("Erro durante o processo de web scraping:", error);
+        if (error instanceof functions.https.HttpsError) {
+            throw error;
+        } else {
+            throw new functions.https.HttpsError('internal', 'Ocorreu um erro inesperado no servidor ao tentar buscar os dados da UNA-SUS.');
+        }
+    } finally {
+        // 6. Fechar o navegador
+        if (browser) {
+            await browser.close();
+            console.log("Navegador fechado.");
+        }
     }
 });

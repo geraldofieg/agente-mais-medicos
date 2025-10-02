@@ -74,6 +74,24 @@ button {
 button:hover {
     background-color: #004494;
 }
+
+/* Estilo específico para o botão de importação */
+.import-button {
+    background-color: #28a745; /* Verde para indicar uma ação positiva como importar */
+}
+
+.import-button:hover {
+    background-color: #218838; /* Verde mais escuro no hover */
+}
+
+/* Estilo para botões de cancelamento ou secundários */
+.cancel-button {
+    background-color: #6c757d; /* Cinza para ações secundárias */
+}
+
+.cancel-button:hover {
+    background-color: #5a6268;
+}
 .conditional {
     display: none;
     padding-left: 20px;
@@ -89,6 +107,22 @@ button:hover {
     font-size: 0.9em;
     color: #666;
     margin-top: 5px;
+}
+
+/* Estilo para a mensagem de instrução na página de registro */
+.info-text {
+    background-color: #f0f8ff; /* AliceBlue, um azul bem claro */
+    border: 1px solid #b0c4de; /* LightSteelBlue */
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    font-size: 0.95em;
+    color: #334;
+}
+
+.info-text strong {
+    color: #0056b3; /* Azul escuro para dar destaque */
 }
 
 /* Estilos para a nova seção de ações */

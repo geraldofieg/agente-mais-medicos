@@ -32,6 +32,7 @@
                         <button type="button" id="delete-selected-doctor-btn">Excluir</button>
                     </div>
                     <button type="button" id="manage-doctors-btn">Cadastrar Novo / Ver Lista</button>
+                    <button type="button" id="import-doctors-btn" class="import-button">Conectar com UNA-SUS</button>
                     <a href="admin.html" id="admin-panel-link" style="margin-left: 10px; display: none;">Painel Administrativo</a>
                     <button type="button" id="logout-btn" class="logout-button">Sair</button>
                 </div>
@@ -387,6 +388,33 @@
                 <div class="doctor-form-actions">
                     <button type="submit">Salvar Médico</button>
                     <button type="button" id="clear-doctor-form-btn">Limpar Formulário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Inserir Credenciais do Portal -->
+    <div id="import-credentials-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn import-modal-close-x">&times;</span>
+            <h2>Buscar Dados da UNA-SUS</h2>
+            <p>Para buscar sua lista de supervisionados, insira as credenciais que você usa para acessar o programa 'Mais Médicos' no site da UNA-SUS. Elas não serão salvas.</p>
+
+            <form id="import-credentials-form">
+                <div class="form-group">
+                    <label for="portal-email">E-mail de Acesso (UNA-SUS):</label>
+                    <input type="email" id="portal-email" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="portal-password">Senha de Acesso (UNA-SUS):</label>
+                    <input type="password" id="portal-password" required autocomplete="current-password">
+                </div>
+
+                <div id="import-feedback" class="hidden" style="padding: 10px; margin-bottom: 15px; border-radius: 5px;"></div>
+
+                <div class="doctor-form-actions">
+                     <button type="submit">Buscar Supervisionados</button>
+                     <button type="button" id="cancel-import-btn" class="cancel-button">Cancelar</button>
                 </div>
             </form>
         </div>

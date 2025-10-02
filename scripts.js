@@ -83,6 +83,73 @@ function initializeAppLogic(currentUser) {
     const doctorForm = document.getElementById('doctor-form');
     const clearDoctorFormBtn = document.getElementById('clear-doctor-form-btn');
 
+    // --- Elementos do Modal de Importação ---
+    const importDoctorsBtn = document.getElementById('import-doctors-btn');
+    const importModal = document.getElementById('import-credentials-modal');
+    const importModalCloseBtn = document.querySelector('.import-modal-close-x');
+    const cancelImportBtn = document.getElementById('cancel-import-btn');
+    const importCredentialsForm = document.getElementById('import-credentials-form');
+    const importFeedbackDiv = document.getElementById('import-feedback');
+
+    // --- Lógica do Modal de Importação ---
+    function openImportModal() {
+        importFeedbackDiv.classList.add('hidden');
+        importCredentialsForm.reset();
+        importModal.classList.remove('hidden');
+    }
+
+    function closeImportModal() {
+        importModal.classList.add('hidden');
+    }
+
+    importDoctorsBtn.addEventListener('click', openImportModal);
+    importModalCloseBtn.addEventListener('click', closeImportModal);
+    cancelImportBtn.addEventListener('click', closeImportModal);
+    window.addEventListener('click', (event) => { if (event.target == importModal) closeImportModal(); });
+
+    importCredentialsForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('portal-email').value;
+        const password = document.getElementById('portal-password').value;
+
+        const submitButton = importCredentialsForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+
+        // Exibe feedback de carregamento
+        importFeedbackDiv.classList.remove('hidden');
+        importFeedbackDiv.style.backgroundColor = '#eef';
+        importFeedbackDiv.style.color = '#333';
+        importFeedbackDiv.textContent = 'Importando... Por favor, aguarde. Isso pode levar alguns instantes.';
+
+        try {
+            // Importa a função httpsCallable sob demanda
+            const { getFunctions, httpsCallable } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js");
+            const functions = getFunctions(app);
+            const importSupervisedDoctors = httpsCallable(functions, 'importSupervisedDoctors');
+            const result = await importSupervisedDoctors({ email, password });
+
+            if (result.data.success) {
+                importFeedbackDiv.style.backgroundColor = '#d4edda'; // Verde sucesso
+                importFeedbackDiv.style.color = '#155724';
+                importFeedbackDiv.textContent = `Sucesso! ${result.data.doctorsAdded} médicos foram importados. A janela será fechada.`;
+
+                // Fecha o modal após um curto período para o usuário ler a mensagem
+                setTimeout(closeImportModal, 3000);
+            } else {
+                // Lança um erro para ser pego pelo bloco catch
+                throw new Error(result.data.error || 'Ocorreu um erro desconhecido durante a importação.');
+            }
+        } catch (error) {
+            console.error("Erro ao importar médicos:", error);
+            importFeedbackDiv.style.backgroundColor = '#f8d7da'; // Vermelho erro
+            importFeedbackDiv.style.color = '#721c24';
+            importFeedbackDiv.textContent = `Erro: ${error.message}`;
+        } finally {
+            // Reabilita o botão ao final da operação
+            submitButton.disabled = false;
+        }
+    });
+
     // Referência para a coleção 'doctors' no Firestore.
     const doctorsCollection = collection(db, 'doctors');
 
