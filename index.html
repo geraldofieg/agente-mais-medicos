@@ -32,10 +32,13 @@
                         <button type="button" id="delete-selected-doctor-btn">Excluir</button>
                     </div>
                     <button type="button" id="manage-doctors-btn">Cadastrar Novo / Ver Lista</button>
+                    <button type="button" id="import-doctors-btn">Conectar/Buscar dados do programa Mais Médicos no site da UNA-SUS</button>
                     <a href="admin.html" id="admin-panel-link" style="margin-left: 10px; display: none;">Painel Administrativo</a>
                     <button type="button" id="logout-btn" class="logout-button">Sair</button>
                 </div>
-                <p>Selecione um médico para preencher o relatório ou editar seus dados. Se a lista estiver vazia, clique em "Cadastrar Novo" para adicionar sua equipe.</p>
+                <p>Selecione um médico para preencher o relatório ou editar seus dados. Se a lista estiver vazia, clique em "Cadastrar Novo" para adicionar sua equipe ou em "Conectar/Buscar..." para importar sua lista do portal UNA-SUS.</p>
+                 <!-- Adiciona uma área de feedback para a importação -->
+                <div id="import-feedback" class="feedback-container hidden"></div>
             </div>
         </fieldset>
 
