@@ -68,10 +68,15 @@
                     errorMessageDiv.classList.remove('hidden');
                 }
             } catch (error) {
-                console.error("Erro ao chamar a função:", error);
-                console.log("Catch block executed! Error:", error.message);
-                // Exibe a mensagem de erro detalhada retornada pela função
-                errorMessageDiv.textContent = `Erro: ${error.message}`;
+                console.error("Erro detalhado ao chamar a função:", error);
+
+                // Constrói uma mensagem de erro mais informativa
+                let friendlyMessage = `Erro de comunicação: ${error.message}`;
+                if (error.details) {
+                    friendlyMessage = `${error.message} (Código: ${error.details.originalCode || 'desconhecido'})`;
+                }
+
+                errorMessageDiv.textContent = friendlyMessage;
                 errorMessageDiv.classList.remove('hidden');
             }
         });

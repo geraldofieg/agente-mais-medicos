@@ -31,16 +31,18 @@ exports.createSupervisor = functions.https.onCall(async (data, context) => {
         return { success: true, message: `Supervisor ${email} registrado com sucesso.` };
 
     } catch (error) {
-        console.error("Erro ao criar supervisor:", error);
+        // Log detalhado do erro para depuração no Firebase
+        console.error("Erro detalhado ao criar supervisor:", JSON.stringify(error, null, 2));
 
         // Mapeia erros do Firebase para mensagens mais amigáveis
         if (error.code === 'auth/email-already-exists') {
-            throw new functions.https.HttpsError('already-exists', 'Este e-mail já está em uso.');
+            throw new functions.https.HttpsError('already-exists', 'Este e-mail já está em uso.', { originalCode: error.code });
         }
         if (error.code === 'auth/invalid-password') {
-            throw new functions.https.HttpsError('invalid-argument', 'A senha é inválida. Deve ter no mínimo 6 caracteres.');
+            throw new functions.https.HttpsError('invalid-argument', 'A senha é inválida. Deve ter no mínimo 6 caracteres.', { originalCode: error.code });
         }
 
-        throw new functions.https.HttpsError('internal', 'Ocorreu um erro interno ao criar o supervisor.');
+        // Para todos os outros erros, joga um erro genérico, mas mantém o log detalhado.
+        throw new functions.https.HttpsError('internal', 'Ocorreu um erro interno ao criar o supervisor.', { originalCode: error.code || 'UNKNOWN' });
     }
 });
