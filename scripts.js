@@ -119,7 +119,7 @@ function initializeAppLogic(currentUser) {
         importFeedbackDiv.classList.remove('hidden');
         importFeedbackDiv.style.backgroundColor = '#eef';
         importFeedbackDiv.style.color = '#333';
-        importFeedbackDiv.textContent = 'Importando... Por favor, aguarde. Isso pode levar alguns instantes.';
+        importFeedbackDiv.textContent = 'Buscando dados... Por favor, aguarde. Isso pode levar alguns instantes.';
 
         try {
             // Importa a função httpsCallable sob demanda
@@ -131,16 +131,16 @@ function initializeAppLogic(currentUser) {
             if (result.data.success) {
                 importFeedbackDiv.style.backgroundColor = '#d4edda'; // Verde sucesso
                 importFeedbackDiv.style.color = '#155724';
-                importFeedbackDiv.textContent = `Sucesso! ${result.data.doctorsAdded} médicos foram importados. A janela será fechada.`;
+                importFeedbackDiv.textContent = `Sucesso! ${result.data.doctorsAdded} novos médicos foram adicionados. A janela será fechada.`;
 
                 // Fecha o modal após um curto período para o usuário ler a mensagem
-                setTimeout(closeImportModal, 3000);
+                setTimeout(closeImportModal, 4000);
             } else {
                 // Lança um erro para ser pego pelo bloco catch
-                throw new Error(result.data.error || 'Ocorreu um erro desconhecido durante a importação.');
+                throw new Error(result.data.error || 'Ocorreu um erro desconhecido durante a busca.');
             }
         } catch (error) {
-            console.error("Erro ao importar médicos:", error);
+            console.error("Erro ao buscar médicos:", error);
             importFeedbackDiv.style.backgroundColor = '#f8d7da'; // Vermelho erro
             importFeedbackDiv.style.color = '#721c24';
             importFeedbackDiv.textContent = `Erro: ${error.message}`;
