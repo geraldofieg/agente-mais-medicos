@@ -367,10 +367,21 @@ function initializeAppLogic(currentUser) {
 
         } catch (error) {
             // Mostra feedback de erro
-            console.error("Erro ao chamar a função 'importSupervisedDoctors':", error);
+            console.error("Erro ao chamar a função 'importSupervisedDoctors':", JSON.stringify(error, null, 2));
             importFeedback.classList.remove('loading');
             importFeedback.classList.add('error');
-            importFeedback.textContent = `Falha na importação: ${error.message}`;
+
+            // Constrói a mensagem de erro, priorizando os detalhes do servidor.
+            let errorMessage = 'Ocorreu uma falha na importação.'; // Mensagem padrão
+            if (error.details && error.details.originalError) {
+                // Usa o erro detalhado vindo do backend (Puppeteer, etc.)
+                errorMessage = error.details.originalError;
+            } else if (error.message) {
+                // Usa a mensagem principal do HttpsError se os detalhes não estiverem disponíveis
+                errorMessage = error.message;
+            }
+
+            importFeedback.textContent = `Falha na importação: ${errorMessage}`;
         }
     });
 

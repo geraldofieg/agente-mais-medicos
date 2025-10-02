@@ -269,9 +269,13 @@ async function scrapeAndStoreDoctors(supervisorId, email, password) {
         if (error instanceof functions.https.HttpsError) {
             throw error;
         } else {
-            // Para outros erros (ex: erros do Puppeteer), propaga a mensagem original.
-            // Isso dá mais contexto ao cliente sobre o que falhou.
-            throw new functions.https.HttpsError('internal', error.message || 'Ocorreu um erro inesperado no servidor ao tentar buscar os dados da UNA-SUS.');
+        // Para outros erros (ex: erros do Puppeteer), cria um erro com uma mensagem genérica
+        // mas passa a mensagem de erro original no objeto 'details' para o cliente.
+        throw new functions.https.HttpsError(
+            'internal', // Código do erro
+            'Ocorreu um erro no servidor ao buscar os dados da UNA-SUS. Verifique os logs para detalhes.', // Mensagem principal (genérica)
+            { originalError: error.message } // Detalhes para o cliente
+        );
         }
     } finally {
         if (browser) {
