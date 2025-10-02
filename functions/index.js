@@ -4,7 +4,10 @@ const puppeteer = require("puppeteer");
 
 admin.initializeApp();
 
-exports.createSupervisor = functions.https.onCall(async (data, context) => {
+exports.createSupervisor = functions.runWith({
+    timeoutSeconds: 300, // Aumenta o timeout para acomodar o web scraping
+    memory: '1GB',       // Aloca mais memória para o Puppeteer
+}).https.onCall(async (data, context) => {
     // Verificação de autenticação e permissão de administrador
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Você precisa estar autenticado para realizar esta ação.');
@@ -34,19 +37,40 @@ exports.createSupervisor = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('invalid-argument', 'E-mail e senha são obrigatórios.');
     }
 
+    let userRecord;
     try {
-        // Cria o usuário no Firebase Authentication
-        const userRecord = await admin.auth().createUser({
+        // Etapa 1: Criar o usuário no Firebase Authentication
+        userRecord = await admin.auth().createUser({
             email: email,
             password: password,
         });
 
-        // Define uma custom claim para identificar o usuário como supervisor
+        // Etapa 2: Definir a custom claim de supervisor
         await admin.auth().setCustomUserClaims(userRecord.uid, { supervisor: true });
-
         console.log(`Supervisor criado com sucesso: ${email} (UID: ${userRecord.uid})`);
 
-        return { success: true, message: `Supervisor ${email} registrado com sucesso.` };
+        // Etapa 3: Tentar importar os médicos supervisionados
+        try {
+            const importResult = await scrapeAndStoreDoctors(userRecord.uid, email, password);
+            console.log(`Importação para ${email} concluída. Médicos adicionados: ${importResult.doctorsAdded}.`);
+
+            return {
+                success: true,
+                importStatus: 'success',
+                message: `Supervisor ${email} registrado com sucesso e ${importResult.doctorsAdded} médicos foram importados.`,
+                doctorsAdded: importResult.doctorsAdded
+            };
+
+        } catch (importError) {
+            console.warn(`A conta do supervisor ${email} foi criada, mas a importação da UNA-SUS falhou.`, importError.message);
+            // A conta foi criada, mas a importação falhou. Retorna sucesso com um aviso.
+            return {
+                success: true,
+                importStatus: 'fail',
+                message: `Sua conta foi criada, mas não foi possível conectar ao portal da UNA-SUS. Verifique suas credenciais e tente a importação manual mais tarde.`,
+                errorDetails: importError.message // Envia a mensagem de erro para o frontend
+            };
+        }
 
     } catch (error) {
         // Log detalhado do erro para depuração no Firebase
@@ -148,63 +172,45 @@ exports.deleteSupervisor = functions.https.onCall(async (data, context) => {
     }
 });
 
-// Nova função para buscar médicos via web scraping
-exports.importSupervisedDoctors = functions.runWith({
-    timeoutSeconds: 300, // Aumenta o timeout para acomodar o web scraping
-    memory: '1GB',       // Aloca mais memória para o Puppeteer
-}).https.onCall(async (data, context) => {
-    // 1. Validação
-    if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'Você precisa estar autenticado.');
-    }
-    if (!context.auth.token.supervisor) {
-        throw new functions.https.HttpsError('permission-denied', 'Apenas supervisores podem realizar esta ação.');
-    }
-
-    const { email, password } = data;
-    if (!email || !password) {
-        throw new functions.https.HttpsError('invalid-argument', 'E-mail e senha do portal UNA-SUS são obrigatórios.');
-    }
-
-    const supervisorId = context.auth.uid;
+/**
+ * Função reutilizável para fazer o web scraping dos médicos supervisionados no portal da UNA-SUS.
+ * @param {string} supervisorId - O UID do supervisor no Firebase.
+ * @param {string} email - O e-mail de login para o portal da UNA-SUS.
+ * @param {string} password - A senha de login para o portal da UNA-SUS.
+ * @returns {Promise<{success: boolean, doctorsAdded: number}>} - Um objeto indicando o sucesso e o número de médicos adicionados.
+ * @throws {functions.https.HttpsError} - Lança erros específicos para falhas de login ou scraping.
+ */
+async function scrapeAndStoreDoctors(supervisorId, email, password) {
     console.log(`Iniciando busca de dados da UNA-SUS para o supervisor: ${supervisorId}`);
-
     let browser = null;
     let doctorsAdded = 0;
 
     try {
-        // 2. Iniciar o Puppeteer
         browser = await puppeteer.launch({ args: ['--no-sandbox'] });
         const page = await browser.newPage();
 
-        // 3. Login no Portal UNA-SUS
         const loginUrl = 'https://sistemas.unasus.gov.br/webportfolio/web/atividade/4/';
-        console.log(`Navegando para a página de atividades da UNA-SUS: ${loginUrl}`);
+        console.log(`Navegando para: ${loginUrl}`);
         await page.goto(loginUrl, { waitUntil: 'networkidle2' });
 
-        // Seletores baseados na estrutura de login do Moodle/Wordpress, comum na UNA-SUS.
         await page.type('#user_login', email);
         await page.type('#user_pass', password);
 
-        console.log("Preenchendo credenciais e tentando fazer login...");
-
+        console.log("Tentando fazer login na UNA-SUS...");
         await Promise.all([
             page.waitForNavigation({ waitUntil: 'networkidle2' }),
             page.click('#wp-submit')
         ]);
 
-        // Verifica se o login falhou.
         if (page.url().includes('wp-login.php')) {
-            console.error("Falha no login: credenciais inválidas para o portal da UNA-SUS.");
+            console.error(`Falha no login para o supervisor ${supervisorId} com email ${email}. Credenciais inválidas.`);
             throw new functions.https.HttpsError('permission-denied', 'Login ou senha inválidos no portal da UNA-SUS.');
         }
         console.log("Login na UNA-SUS bem-sucedido.");
 
-        // 4. Extrair os dados dos médicos
-        console.log("Buscando dados dos médicos supervisionados na página de atividades...");
+        console.log("Extraindo dados dos médicos...");
         const supervisedDoctors = await page.evaluate(() => {
             const doctors = [];
-            // Seletor para a lista de supervisionados, baseado na nova informação.
             const doctorElements = document.querySelectorAll('select#IdPessoa option');
             doctorElements.forEach(option => {
                 const text = option.innerText;
@@ -221,12 +227,11 @@ exports.importSupervisedDoctors = functions.runWith({
         });
 
         if (supervisedDoctors.length === 0) {
-            console.warn("Nenhum médico encontrado na página. A estrutura do site pode ter mudado ou não há supervisionados.");
-            throw new functions.https.HttpsError('not-found', 'Não foi possível encontrar a lista de supervisionados. Verifique se há médicos cadastrados no portal da UNA-SUS ou se a estrutura do site mudou.');
+            console.warn("Nenhum médico encontrado na página para o supervisor:", supervisorId);
+            throw new functions.https.HttpsError('not-found', 'Nenhum médico supervisionado foi encontrado no portal da UNA-SUS.');
         }
-        console.log(`Encontrados ${supervisedDoctors.length} médicos na página.`);
+        console.log(`Encontrados ${supervisedDoctors.length} médicos.`);
 
-        // 5. Salvar no Firestore
         const db = admin.firestore();
         for (const doctor of supervisedDoctors) {
             const sanitizedCpf = doctor.cpf.replace(/[^\d]/g, '');
@@ -251,7 +256,7 @@ exports.importSupervisedDoctors = functions.runWith({
                 doctorsAdded++;
                 console.log(`Médico adicionado: ${doctor.name} (${sanitizedCpf})`);
             } else {
-                console.log(`Médico já existe, pulando: ${doctor.name} (${sanitizedCpf})`);
+                console.log(`Médico já existe: ${doctor.name} (${sanitizedCpf})`);
             }
         }
 
@@ -260,16 +265,36 @@ exports.importSupervisedDoctors = functions.runWith({
 
     } catch (error) {
         console.error("Erro durante o processo de web scraping:", error);
+        // Se o erro já for um HttpsError, propaga-o. Caso contrário, cria um novo.
         if (error instanceof functions.https.HttpsError) {
             throw error;
         } else {
             throw new functions.https.HttpsError('internal', 'Ocorreu um erro inesperado no servidor ao tentar buscar os dados da UNA-SUS.');
         }
     } finally {
-        // 6. Fechar o navegador
         if (browser) {
             await browser.close();
             console.log("Navegador fechado.");
         }
     }
+}
+
+// Função para buscar médicos via web scraping (agora usa a função reutilizável)
+exports.importSupervisedDoctors = functions.runWith({
+    timeoutSeconds: 300,
+    memory: '1GB',
+}).https.onCall(async (data, context) => {
+    if (!context.auth || !context.auth.token.supervisor) {
+        throw new functions.https.HttpsError('permission-denied', 'Apenas supervisores podem realizar esta ação.');
+    }
+
+    const { email, password } = data;
+    if (!email || !password) {
+        throw new functions.https.HttpsError('invalid-argument', 'E-mail e senha do portal UNA-SUS são obrigatórios.');
+    }
+
+    const supervisorId = context.auth.uid;
+
+    // Chama a função de scraping reutilizável
+    return await scrapeAndStoreDoctors(supervisorId, email, password);
 });
