@@ -60,9 +60,14 @@ document.addEventListener('DOMContentLoaded', function () {
             if (supervisors && supervisors.length > 0) {
                 supervisors.forEach(supervisor => {
                     const row = document.createElement('tr');
+                    // Define o ID da linha com o UID do supervisor para fácil remoção
+                    row.id = `supervisor-${supervisor.uid}`;
                     row.innerHTML = `
                         <td>${supervisor.email}</td>
                         <td>${supervisor.uid}</td>
+                        <td>
+                            <button class="delete-btn" data-uid="${supervisor.uid}">Excluir</button>
+                        </td>
                     `;
                     supervisorsList.appendChild(row);
                 });
@@ -84,4 +89,43 @@ document.addEventListener('DOMContentLoaded', function () {
             errorContainer.querySelector('p').textContent = `Erro ao carregar: ${error.message}`;
         }
     }
+
+    // --- LÓGICA DE EXCLUSÃO ---
+    // Adiciona um event listener na tabela para capturar cliques nos botões de exclusão
+    supervisorsList.addEventListener('click', async (event) => {
+        if (event.target.classList.contains('delete-btn')) {
+            const button = event.target;
+            const uid = button.dataset.uid;
+            const email = button.closest('tr').querySelector('td').textContent; // Pega o email da primeira célula da linha
+
+            // Confirmação do usuário
+            if (confirm(`Você tem certeza que deseja excluir o supervisor "${email}"? Esta ação não pode ser desfeita.`)) {
+
+                // Desabilita o botão para evitar cliques múltiplos
+                button.disabled = true;
+                button.textContent = 'Excluindo...';
+
+                try {
+                    const deleteSupervisor = httpsCallable(functions, 'deleteSupervisor');
+                    await deleteSupervisor({ uid: uid });
+
+                    // Remoção da linha da tabela na UI
+                    const rowToRemove = document.getElementById(`supervisor-${uid}`);
+                    if (rowToRemove) {
+                        rowToRemove.remove();
+                    }
+
+                    alert('Supervisor excluído com sucesso!');
+
+                } catch (error) {
+                    console.error('Erro ao excluir supervisor:', error);
+                    alert(`Falha ao excluir o supervisor: ${error.message}`);
+
+                    // Reabilita o botão em caso de erro
+                    button.disabled = false;
+                    button.textContent = 'Excluir';
+                }
+            }
+        }
+    });
 });

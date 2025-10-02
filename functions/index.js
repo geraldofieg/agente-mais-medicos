@@ -110,3 +110,39 @@ exports.listSupervisors = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('internal', 'Ocorreu um erro interno ao buscar a lista de supervisores.');
     }
 });
+
+exports.deleteSupervisor = functions.https.onCall(async (data, context) => {
+    // 1. Verificação de autenticação e permissão de administrador
+    if (!context.auth || !context.auth.token.admin) {
+        throw new functions.https.HttpsError('permission-denied', 'Apenas administradores podem excluir supervisores.');
+    }
+
+    const { uid } = data;
+
+    // 2. Validação do UID
+    if (!uid) {
+        throw new functions.https.HttpsError('invalid-argument', 'O UID do supervisor é obrigatório.');
+    }
+
+    // 3. Proteção contra autoexclusão
+    if (uid === context.auth.uid) {
+        throw new functions.https.HttpsError('invalid-argument', 'Um administrador não pode excluir a si mesmo.');
+    }
+
+    try {
+        // 4. Excluir o usuário
+        await admin.auth().deleteUser(uid);
+        console.log(`Supervisor com UID: ${uid} foi excluído com sucesso por ${context.auth.token.email}`);
+        return { success: true, message: 'Supervisor excluído com sucesso.' };
+    } catch (error) {
+        console.error(`Erro ao excluir supervisor com UID: ${uid}. Erro:`, JSON.stringify(error, null, 2));
+
+        // 5. Tratamento de erros específicos
+        if (error.code === 'auth/user-not-found') {
+            throw new functions.https.HttpsError('not-found', 'O supervisor que você está tentando excluir não foi encontrado.');
+        }
+
+        // Erro genérico para outras falhas
+        throw new functions.https.HttpsError('internal', 'Ocorreu um erro interno ao tentar excluir o supervisor.');
+    }
+});
