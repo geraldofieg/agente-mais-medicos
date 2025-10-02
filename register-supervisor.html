@@ -69,7 +69,9 @@
                 }
             } catch (error) {
                 console.error("Erro ao chamar a função:", error);
-                errorMessageDiv.textContent = 'Erro de comunicação com o servidor. Tente novamente.';
+                console.log("Catch block executed! Error:", error.message);
+                // Exibe a mensagem de erro detalhada retornada pela função
+                errorMessageDiv.textContent = `Erro: ${error.message}`;
                 errorMessageDiv.classList.remove('hidden');
             }
         });
