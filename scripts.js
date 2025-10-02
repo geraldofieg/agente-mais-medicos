@@ -10,20 +10,36 @@ const auth = getAuth(app);
 // Ela é a primeira coisa que roda.
 onAuthStateChanged(auth, (user) => {
     const loader = document.getElementById('loader');
-    const mainContainer = document.querySelector('.container.hidden'); // Seleciona o container principal que está escondido
+    const mainContainer = document.querySelector('.container.hidden');
 
     if (user) {
-        // Se o usuário está logado, mostra o conteúdo e esconde o loader.
+        // O usuário está logado. Agora, verificamos as permissões.
         console.log("Usuário autenticado:", user.uid);
 
-        if(loader) loader.classList.add('hidden');
-        if(mainContainer) mainContainer.classList.remove('hidden');
+        // Verifica as custom claims para saber se é admin
+        user.getIdTokenResult().then((idTokenResult) => {
+            const adminPanelLink = document.getElementById('admin-panel-link');
+            // Se a claim 'admin' for verdadeira, exibe o link
+            if (!!idTokenResult.claims.admin) {
+                console.log("Usuário é um administrador. Exibindo o painel administrativo.");
+                if (adminPanelLink) {
+                    adminPanelLink.style.display = 'inline';
+                }
+            } else {
+                console.log("Usuário não é um administrador.");
+            }
+        }).catch((error) => {
+            console.error("Erro ao obter claims do token:", error);
+        });
 
-        // A página só carrega sua lógica principal se o usuário for válido.
+        // Mostra o conteúdo principal da página
+        if (loader) loader.classList.add('hidden');
+        if (mainContainer) mainContainer.classList.remove('hidden');
+
+        // Carrega a lógica principal da aplicação
         initializeAppLogic(user);
     } else {
-        // Se o usuário não está logado, redireciona para a página de login.
-        // O loader continuará visível até que a nova página carregue, o que é o comportamento esperado.
+        // Se não há usuário, redireciona para a página de login.
         console.log("Nenhum usuário autenticado. Redirecionando para login.html");
         window.location.href = 'login.html';
     }
