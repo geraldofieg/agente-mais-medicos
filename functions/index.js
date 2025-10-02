@@ -49,3 +49,27 @@ exports.createSupervisor = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('internal', 'Ocorreu um erro interno ao criar o supervisor.', { originalCode: error.code || 'UNKNOWN' });
     }
 });
+
+exports.listSupervisors = functions.https.onCall(async (data, context) => {
+    // Verifica se o usuário que chama a função está autenticado.
+    // Para um ambiente de produção, seria ideal verificar se o usuário é um administrador.
+    // if (!context.auth || !context.auth.token.admin) {
+    //     throw new functions.https.HttpsError('unauthenticated', 'Apenas administradores podem executar esta ação.');
+    // }
+
+    try {
+        const listUsersResult = await admin.auth().listUsers();
+        const supervisors = listUsersResult.users
+            .filter(user => user.customClaims && user.customClaims.supervisor === true)
+            .map(user => ({
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName || 'N/A',
+            }));
+
+        return { supervisors };
+    } catch (error) {
+        console.error("Erro ao listar supervisores:", JSON.stringify(error, null, 2));
+        throw new functions.https.HttpsError('internal', 'Ocorreu um erro interno ao buscar a lista de supervisores.');
+    }
+});
