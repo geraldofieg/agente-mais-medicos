@@ -5,15 +5,16 @@ import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/fi
 
 const auth = getAuth(app);
 
-// --- GATEKEEPER ---
-// Esta função verifica o estado de autenticação do usuário.
-// Ela é a primeira coisa que roda.
+// --- INICIALIZAÇÃO DA APLICAÇÃO ---
+// Esta função verifica se um usuário está logado e, em caso afirmativo,
+// inicia a lógica principal da aplicação. A proteção de página (redirecionamento)
+// é feita pelo 'auth-guard.js'
 onAuthStateChanged(auth, (user) => {
     const loader = document.getElementById('loader');
     const mainContainer = document.querySelector('.container.hidden');
 
     if (user) {
-        // O usuário está logado. Agora, verificamos as permissões.
+        // O usuário está logado.
         console.log("Usuário autenticado:", user.uid);
 
         // Verifica as custom claims para saber se é admin
@@ -32,16 +33,17 @@ onAuthStateChanged(auth, (user) => {
             console.error("Erro ao obter claims do token:", error);
         });
 
-        // Mostra o conteúdo principal da página
-        if (loader) loader.classList.add('hidden');
+        // Mostra o conteúdo principal da página e esconde o loader
+        if (loader) loader.style.display = 'none';
         if (mainContainer) mainContainer.classList.remove('hidden');
 
         // Carrega a lógica principal da aplicação
         initializeAppLogic(user);
     } else {
-        // Se não há usuário, redireciona para a página de login.
-        console.log("Nenhum usuário autenticado. Redirecionando para login.html");
-        window.location.href = 'login.html';
+        // Se não houver usuário, o 'auth-guard.js' já terá redirecionado.
+        // Apenas garantimos que o loader seja escondido se por algum motivo ele ainda estiver visível.
+        if (loader) loader.style.display = 'none';
+        console.log("Nenhum usuário autenticado. O auth-guard deve lidar com o redirecionamento.");
     }
 });
 

@@ -15,14 +15,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const supervisorsList = document.getElementById('supervisors-list');
 
     // --- GATEKEEPER ---
-    // Verifica se há um usuário logado antes de carregar o conteúdo
+    // Verifica se o usuário está logado e se tem permissão de administrador.
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            // Se o usuário está logado, busca a lista de supervisores
-            console.log("Usuário autenticado. Carregando lista de supervisores...");
-            loadSupervisors();
+            // Usuário está logado, agora verifica as permissões de administrador.
+            user.getIdTokenResult().then((idTokenResult) => {
+                // A claim 'admin' deve ser verdadeira.
+                if (!!idTokenResult.claims.admin) {
+                    console.log("Administrador autenticado. Carregando lista de supervisores...");
+                    loadSupervisors();
+                } else {
+                    // Usuário logado, mas não é administrador. Redireciona para a página inicial.
+                    console.log("Usuário não é administrador. Redirecionando para index.html.");
+                    window.location.href = 'index.html';
+                }
+            }).catch((error) => {
+                console.error("Erro ao verificar permissões de administrador:", error);
+                // Em caso de erro, redireciona por segurança.
+                window.location.href = 'index.html';
+            });
         } else {
-            // Se não houver usuário, redireciona para a página de login
+            // Se não houver usuário, redireciona para a página de login.
             console.log("Nenhum usuário autenticado. Redirecionando para login.html");
             window.location.href = 'login.html';
         }
