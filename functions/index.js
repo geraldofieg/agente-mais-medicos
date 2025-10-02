@@ -41,6 +41,9 @@ exports.createSupervisor = functions.https.onCall(async (data, context) => {
         if (error.code === 'auth/invalid-password') {
             throw new functions.https.HttpsError('invalid-argument', 'A senha é inválida. Deve ter no mínimo 6 caracteres.', { originalCode: error.code });
         }
+        if (error.code === 'auth/configuration-not-found') {
+            throw new functions.https.HttpsError('failed-precondition', 'O método de autenticação por E-mail/Senha não está habilitado no Firebase. Habilite-o no console do Firebase para continuar.', { originalCode: error.code });
+        }
 
         // Para todos os outros erros, joga um erro genérico, mas mantém o log detalhado.
         throw new functions.https.HttpsError('internal', 'Ocorreu um erro interno ao criar o supervisor.', { originalCode: error.code || 'UNKNOWN' });
