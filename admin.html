@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Supervisores</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Painel Administrativo</h1>
+        <h2>Lista de Supervisores Cadastrados</h2>
+
+        <div id="loading-container">
+            <p>Carregando supervisores...</p>
+        </div>
+
+        <div id="error-container" style="display: none; color: red;">
+            <p>Ocorreu um erro ao carregar a lista de supervisores.</p>
+        </div>
+
+        <table id="supervisors-table" style="display: none;">
+            <thead>
+                <tr>
+                    <th>E-mail</th>
+                    <th>UID do Usuário</th>
+                </tr>
+            </thead>
+            <tbody id="supervisors-list">
+                <!-- As linhas da tabela serão inseridas aqui via JavaScript -->
+            </tbody>
+        </table>
+
+        <a href="index.html">Voltar para a página inicial</a>
+    </div>
+
+    <!-- Firebase (Modern Modular SDK) -->
+    <script type="module" src="admin.js"></script>
+
+</body>
+</html>
