@@ -2,8 +2,10 @@
 import { db, app } from './firebase-config.js';
 import { collection, doc, setDoc, getDoc, getDocs, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
 const auth = getAuth(app);
+const functions = getFunctions(app, 'southamerica-east1');
 
 // --- INICIALIZAÇÃO DA APLICAÇÃO ---
 // Esta função verifica se um usuário está logado e, em caso afirmativo,
@@ -61,6 +63,8 @@ function initializeAppLogic(currentUser) {
     const mainDoctorActions = document.getElementById('main-doctor-actions');
     const editSelectedDoctorBtn = document.getElementById('edit-selected-doctor-btn');
     const deleteSelectedDoctorBtn = document.getElementById('delete-selected-doctor-btn');
+    const importDoctorsBtn = document.getElementById('import-doctors-btn');
+    const importFeedback = document.getElementById('import-feedback');
 
     // Adiciona o botão de Logout (precisamos criar este botão no HTML)
     const logoutBtn = document.getElementById('logout-btn');
@@ -331,6 +335,45 @@ function initializeAppLogic(currentUser) {
         radios.forEach(radio => radio.addEventListener('change', setVisibility));
         setVisibility();
     }
+
+    // --- Lógica de Importação de Médicos ---
+    importDoctorsBtn.addEventListener('click', async () => {
+        const userEmail = currentUser.email;
+        if (!userEmail) {
+            alert("Não foi possível identificar seu e-mail. Por favor, faça login novamente.");
+            return;
+        }
+
+        const password = prompt(`Por favor, digite sua senha do portal UNA-SUS para o e-mail: ${userEmail}\n\n(Esta senha não será salva)`);
+
+        if (!password) {
+            alert("A importação foi cancelada.");
+            return;
+        }
+
+        // Mostra feedback de carregamento
+        importFeedback.classList.remove('hidden', 'success', 'error');
+        importFeedback.classList.add('loading');
+        importFeedback.textContent = 'Buscando dados no portal UNA-SUS... Isso pode levar alguns minutos. Por favor, aguarde.';
+
+        try {
+            const importFunction = httpsCallable(functions, 'importSupervisedDoctors');
+            const result = await importFunction({ email: userEmail, password: password });
+
+            // Mostra feedback de sucesso
+            importFeedback.classList.remove('loading');
+            importFeedback.classList.add('success');
+            importFeedback.textContent = result.data.message || `Sucesso! ${result.data.doctorsAdded} médico(s) foram adicionados/atualizados. A lista será atualizada automaticamente.`;
+
+        } catch (error) {
+            // Mostra feedback de erro
+            console.error("Erro ao chamar a função 'importSupervisedDoctors':", error);
+            importFeedback.classList.remove('loading');
+            importFeedback.classList.add('error');
+            importFeedback.textContent = `Falha na importação: ${error.message}`;
+        }
+    });
+
 
     // --- Inicialização ---
     listenForDoctors(); // A função agora filtra automaticamente
