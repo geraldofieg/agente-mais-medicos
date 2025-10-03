@@ -1,10 +1,11 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const puppeteer = require("puppeteer");
+const cors = require('cors')({origin: true});
 
 admin.initializeApp();
 
-exports.createSupervisor = functions.runWith({
+exports.createSupervisor = functions.region('southamerica-east1').runWith({
     timeoutSeconds: 300, // Aumenta o timeout para acomodar o web scraping
     memory: '1GB',       // Aloca mais memória para o Puppeteer
 }).https.onCall(async (data, context) => {
@@ -92,7 +93,7 @@ exports.createSupervisor = functions.runWith({
     }
 });
 
-exports.listSupervisors = functions.https.onCall(async (data, context) => {
+exports.listSupervisors = functions.region('southamerica-east1').https.onCall(async (data, context) => {
     // Verificação de autenticação e permissão de administrador
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Você precisa estar autenticado para realizar esta ação.');
@@ -136,7 +137,7 @@ exports.listSupervisors = functions.https.onCall(async (data, context) => {
     }
 });
 
-exports.deleteSupervisor = functions.https.onCall(async (data, context) => {
+exports.deleteSupervisor = functions.region('southamerica-east1').https.onCall(async (data, context) => {
     // 1. Verificação de autenticação e permissão de administrador
     if (!context.auth || !context.auth.token.admin) {
         throw new functions.https.HttpsError('permission-denied', 'Apenas administradores podem excluir supervisores.');
@@ -285,22 +286,73 @@ async function scrapeAndStoreDoctors(supervisorId, email, password) {
     }
 }
 
-// Função para buscar médicos via web scraping (agora usa a função reutilizável)
-exports.importSupervisedDoctors = functions.runWith({
+// Nova versão da função com https.onRequest e tratamento de CORS
+exports.importSupervisedDoctors = functions.region('southamerica-east1').runWith({
     timeoutSeconds: 300,
     memory: '1GB',
-}).https.onCall(async (data, context) => {
-    if (!context.auth || !context.auth.token.supervisor) {
-        throw new functions.https.HttpsError('permission-denied', 'Apenas supervisores podem realizar esta ação.');
-    }
+}).https.onRequest((req, res) => {
+    // Envolve a lógica da função com o middleware CORS
+    cors(req, res, async () => {
+        // 1. Validação do método da requisição
+        if (req.method !== 'POST') {
+            return res.status(405).send('Method Not Allowed');
+        }
 
-    const { email, password } = data;
-    if (!email || !password) {
-        throw new functions.https.HttpsError('invalid-argument', 'E-mail e senha do portal UNA-SUS são obrigatórios.');
-    }
+        // 2. Verificação do token de autenticação
+        const idToken = req.headers.authorization?.split('Bearer ')[1];
+        if (!idToken) {
+            return res.status(401).send({ error: 'unauthenticated', message: 'Token de autenticação não fornecido.' });
+        }
 
-    const supervisorId = context.auth.uid;
+        let decodedToken;
+        try {
+            decodedToken = await admin.auth().verifyIdToken(idToken);
+        } catch (error) {
+            console.error('Erro ao verificar o token:', error);
+            return res.status(401).send({ error: 'unauthenticated', message: 'Token inválido ou expirado.' });
+        }
 
-    // Chama a função de scraping reutilizável
-    return await scrapeAndStoreDoctors(supervisorId, email, password);
+        // 3. Verificação da permissão de supervisor
+        if (!decodedToken.supervisor) {
+            return res.status(403).send({ error: 'permission-denied', message: 'Apenas supervisores podem realizar esta ação.' });
+        }
+
+        // 4. Validação dos dados de entrada (do corpo da requisição)
+        const { data } = req.body; // O Firebase SDK para callables envolve os dados em um objeto 'data'
+        const { email, password } = data || req.body; // Aceita 'data' ou o corpo direto
+
+        if (!email || !password) {
+            return res.status(400).send({ error: 'invalid-argument', message: 'E-mail e senha do portal UNA-SUS são obrigatórios.' });
+        }
+
+        const supervisorId = decodedToken.uid;
+
+        try {
+            // 5. Execução da lógica de negócio
+            const result = await scrapeAndStoreDoctors(supervisorId, email, password);
+            // O SDK do cliente espera uma propriedade 'data' na resposta
+            return res.status(200).send({ data: result });
+        } catch (error) {
+            // 6. Tratamento de erros da lógica de negócio
+            console.error('Erro durante o scraping:', JSON.stringify(error, null, 2));
+            // Mapeia HttpsError para respostas HTTP
+            if (error.code && error.http) {
+                 return res.status(error.http.status || 500).send({
+                    error: {
+                        code: `functions/${error.code}`,
+                        message: error.message,
+                        details: error.details,
+                    }
+                });
+            }
+            // Erro genérico
+            return res.status(500).send({
+                error: {
+                    code: 'functions/internal',
+                    message: 'Ocorreu um erro interno no servidor.',
+                    details: error.message,
+                }
+            });
+        }
+    });
 });
