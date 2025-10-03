@@ -1,32 +1,32 @@
-name: Deploy to Firebase on Push
+name: Deploy Functions to Firebase
 
 on:
   push:
     branches:
-      - main  # Se o nome da sua branch principal for 'master', troque 'main' por 'master'
+      - main # ou o nome do seu ramo principal
 
 jobs:
-  build_and_deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: Install Functions Dependencies
-        run: cd functions && npm install
+      - name: Install Function Dependencies
+        run: npm install --prefix functions
 
       - name: Deploy to Firebase
         run: firebase deploy --only functions --project automacao-maismedicos --non-interactive
